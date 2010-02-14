@@ -1,0 +1,56 @@
+Lexical Analyzer
+Due Feb 25th
+
+The first step in the construction of your compiler is to implement a lexical analyzer for a Pascal-like language. 
+You should use a lexical analyzer generator, such as flex (for C/C) or the lexer component of JavaCC (for Java). 
+If there is another language that you want to program in, there's a good chance that a parser generator has been implemented for that language.
+
+The lexical analyzer generator is a function (in file lex.yy.c in case of Lex for exam) 
+that returns the token and places the lexeme in a variable visible to the outside 
+(as described in Section 3.5 of the Dragon book).
+
+The lexical analyzer should recognize identifiers, integer literals,
+string literals, keywords, and predefined symbols. Their definitions
+are below:
+
+Lexical Classes 
+---------------
+(note that '|' and the outermost '(' and ')' are meta-symbols)
+        ID ::= letter (letter | digit | _)*
+        INT ::= digit+
+        STR ::= "<char>*"
+        WS ::= ( <eol> | <space> | <tab> )+
+        SYM ::= ( + |-| * | = | < | <= | > | >= | <> | . | , | : | ; | 
+                 := | .. | ( | ) | [ | ] )
+In the above definitions, <char> can be any printing character other
+than ". Of course, WS (white space) only serves as a delimiter and no
+corresponding token should be returned by the lexical analyzer.
+Keywords and reserved symbols
+-----------------------------
+The symbols and names that the lexer should recognize are:
+   and begin forward div do else end for function if array mod not of 
+   or procedure program record then to type var while + * -  = < <= > 
+   >= <> . , : ; := .. ( ) [ ]
+
+The language is case sensitive. Each keyword should be uniquely
+identified by its own token. You may choose to return the same
+token (e.g. RELOP) for every relational operator (with different
+lexemes, of course) or a different token for each relational operator.
+The same is true for arithmetic operators.
+
+Comments
+--------
+In the programming language you are building a compiler for, comments
+consist of text enclosed in matching curly braces, namely { and }.  No
+token should be produced for comments. The lexer, upon encountering a
+comment, should produce the first token following the end of the
+comment.
+
+To Turn In
+----------
+You should turn in three things:
+1. The lexical specification you gave as input to the lexer generator.
+2. The output of the lexer generator, i.e. the lexer itself.
+3. A simple program that repeatedly invokes the lexer and
+   prints out the token and lexeme that the lexer returns.
+You should test your lexer on some of the test programs on the web page. When you are confident that it is working correctly, send your submission to the TA and myself.
