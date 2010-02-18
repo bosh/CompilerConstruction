@@ -42,7 +42,7 @@ end
 class Buffer
   @@ids = []
   attr_accessor :contents, :current, :current_head, :style
-  def initialize(str, dirty, style = "default")
+  def initialize(str, dirty, style = :default)
     @contents = str
     @current = @current_head = 0
     @style = style
@@ -87,7 +87,7 @@ class Buffer
   def id_table
     str = ""
     @@ids.each_with_index do |id|
-      str << id.tokenized
+      str << id.tokenized(@style)
     end
     str
   end
@@ -110,11 +110,11 @@ class Token
   def whitespace?
     @text.match(/\A[\n\t\ ]*\z/) #return value. gives nil if not == ws
   end
-  def tokenized
-    if style == "default" : "<#{@type}, #{@value}>\n"
-      elsif style == "brackets" : "[#{@type}: #{@value}]\n"
-      elsif style == "indent" : "\t#{@type}: #{@value}\n"
-      elsif style == "plain" : "#{@type}, #{@value}\n"
+  def tokenized(style = :default)
+    if style == :default : "<#{@type}, #{@value}>\n"
+      elsif style == :brackets : "[#{@type}: #{@value}]\n"
+      elsif style == :indent : "\t#{@type}: #{@value}\n"
+      elsif style == :plain : "#{@type}, #{@value}\n"
     end
   end
 end
@@ -127,7 +127,9 @@ Usage:\n\t$ruby simpLex filename [opts]\nOptions:
 \t-d - Dirty: Comments will not be automatically stripped from the file
 \t-a - All: Forces a full lexical analysis of the file
 \t-s - StdOut: Prints output to the command line (no save to a file)
-\tNOTE: -a, -s, and -f all force a full run of the analyzer\n"
+\t-o - Overwrite: Will overwrite the output file
+\tNOTE: -a, -s, and -f all force a full run of the analyzer
+\t\t Also, -s has precedence in determining output type\n"
 if ARGV.size == 0
   puts instructions
 else
@@ -142,11 +144,12 @@ else
     when "-s"
       opts[:stdout] = true
       opts[:full] = true
-    #when "-f" : #broken
-      #opts[:overwrite] = true
-      #opts[:target] = _the target_
+    when arg[0..1]=="-f" : #broken
+      opts[:overwrite] = true
+      opts[:target] = arg[2..-1]
+      puts "this should not be seen(L150)"
     else
-      #puts "Unrecognized option: '#{arg}'. Attempting run anyway."
+      puts "Unrecognized option: '#{arg}'. Attempting run anyway."
     end
   end
   Lexer.new(ARGV[0], opts)
