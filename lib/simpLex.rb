@@ -7,7 +7,7 @@ class Lexer
     if options[:full] : full_analysis() end
   end
   def full_analysis
-    #if target to write to doesnt exist, create it
+    prepare_outfile
     until complete?
       emit next_token
     end
@@ -17,22 +17,30 @@ class Lexer
     @buffer.finished?
   end
   def next_token
-    #if target to write to doesnt exist, create it
     emit @buffer.get_next_token
   end
   def emit(str)
     if @options[:stdout]
-      puts str
-      #elsif options[:outfile] write to it
-    else
-      #write to the default file File.write(str)
+      print str
+    elsif options[:target]
+      File.open(@options[:target], 'w') {|f| f.write(str) }
+    end
+  end
+  def prepare_outfile
+    if !@options[:stdout]
+      target = @options[:target]
+      if !File.exists?(target) || @options[:overwrite]
+        File.new(target, "w") 
+      else
+        puts "The target file already exists.\nRun with -f or -o if you want to overwrite it."
+        exit(0)
+      end
     end
   end
 end
 
 class Buffer
   @@ids = []
-  @@id = 0
   attr_accessor :contents, :current, :current_head
   def initialize(str, dirty)
     @contents = str
@@ -42,7 +50,7 @@ class Buffer
   def clean!
     #@contents.gsub!(/#[^\n]*\n/, "")  #Strip ruby style comments # to \n
     #@contents.gsub!(/\/\*.*?(\*\/|\z)/m, "") #Strip java style comments /* to */
-    @contents.gsub!(/\{.*?\}/m, "")
+    @contents.gsub!(/\{.*?(\}|\z)/m, "") #Strip {} comments, including nonclosing terminal ones
   end
   def dirty?
     @dirty
@@ -64,14 +72,14 @@ class Buffer
       @current += 1 #increase it
       token = Token.new(@contents[@current_head..@current])
       if token.whitespace? : #handle it
-      elsif token.keyword? : #handle it } THESE ALL MEAN SET TYPE AND VALUE AND BREAK
-      elsif token.symbol? : #handle it
+        elsif token.keyword? : #handle it } THESE ALL MEAN SET TYPE AND VALUE AND BREAK
+        elsif token.symbol? : #handle it
       end
       if token == "\"" : end #run until you get another "
       if token.match(/\A\d+\z/) : end #run until you get a nondigit
       if token.match(/\A[a-zA-Z][a-zA-Z0-9_]*\z/) : end #run until you get an invalid
     end
-    if token.identifier? : end #@@.ids[@@.id] = value, value = @@.id, @@.id += 1; 
+    if token.identifier? : end #@@ids[@@.id] = value, value = @@.id, @@.id += 1; 
     token.tokenized #return
   end
   def id_table
@@ -118,14 +126,19 @@ if ARGV.size == 0
   puts instructions
 else
   opts = {}
+  opts[:target] = "#{ARGV[0]}_lex.txt"
+  args = ARGV.delete opts[:target]
   ARGV.each do |arg|
     case arg
     when "-d" : opts[:dirty] = true
     when "-a" : opts[:full] = true
+    when "-o" : opts[:overwrite] = true
     when "-s"
       opts[:stdout] = true
       opts[:full] = true
     #when "-f" : #broken
+      #opts[:overwrite] = true
+      #opts[:target] = _the target_
     else
       #puts "Unrecognized option: '#{arg}'. Attempting run anyway."
     end
