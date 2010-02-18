@@ -11,6 +11,7 @@ class Lexer
     until complete?
       emit next_token
     end
+    emit @buffer.id_table
   end
   def complete?
     @buffer.finished?
@@ -30,6 +31,8 @@ class Lexer
 end
 
 class Buffer
+  @@ids = []
+  @@id = 0
   attr_accessor :contents, :current, :current_head
   def initialize(str, dirty)
     @contents = str
@@ -47,6 +50,13 @@ class Buffer
   def finished?
     @current_head == @contents.length #Meaning current is beyond referenceable characters
   end
+  def lookahead #Returns the character one ahead of the lookahead
+    if @current+1 < @contents.size
+      @contents[@current+1,0]
+    else
+      nil
+    end
+  end
   def get_next_token
     token = ''
     @current = @current_head-1 #start at -1 such that it can increase to be ==
@@ -57,12 +67,19 @@ class Buffer
       elsif token.keyword? : #handle it } THESE ALL MEAN SET TYPE AND VALUE AND BREAK
       elsif token.symbol? : #handle it
       end
-      if token = "\"" : end #run until you get another "
+      if token == "\"" : end #run until you get another "
       if token.match(/\A\d+\z/) : end #run until you get a nondigit
       if token.match(/\A[a-zA-Z][a-zA-Z0-9_]*\z/) : end #run until you get an invalid
     end
-    if token.identifier? : end #@@ids[@@id] = value, value = @@id, @@id += 1; 
+    if token.identifier? : end #@@.ids[@@.id] = value, value = @@.id, @@.id += 1; 
     token.tokenized #return
+  end
+  def id_table
+    str = ""
+    @@ids.each_with_index do |id|
+      str << id.tokenized
+    end
+    str
   end
 end
 class Token
@@ -71,7 +88,6 @@ class Token
   @@keywords = %w(and begin forward div do else end
     for function if array mod not of or procedure program
     record then to type var while)
-  @@whitespace = ("\t", "\n", " ")
   def initialize(text)
     @text = text
   end
@@ -82,7 +98,7 @@ class Token
     @@symbols.index @text #return value. gives nil if not present
   end
   def whitespace?
-    @@whitespace.index @text #return value. gives nil if not == ws
+    @text.match(/\A[\n\t\ ]*\z/) #return value. gives nil if not == ws
   end
   def tokenized
     "<#{@type},#{@value}>\n"
