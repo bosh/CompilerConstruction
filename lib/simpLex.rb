@@ -41,10 +41,11 @@ end
 
 class Buffer
   @@ids = []
-  attr_accessor :contents, :current, :current_head
-  def initialize(str, dirty)
+  attr_accessor :contents, :current, :current_head, :style
+  def initialize(str, dirty, style = "default")
     @contents = str
     @current = @current_head = 0
+    @style = style
     clean! unless dirty? #Heh heh heh
   end
   def clean!
@@ -71,6 +72,7 @@ class Buffer
     while true #requires a break when you find good stuff
       @current += 1 #increase it
       token = Token.new(@contents[@current_head..@current])
+      nextchar = lookahead
       if token.whitespace? : #handle it
         elsif token.keyword? : #handle it } THESE ALL MEAN SET TYPE AND VALUE AND BREAK
         elsif token.symbol? : #handle it
@@ -109,7 +111,11 @@ class Token
     @text.match(/\A[\n\t\ ]*\z/) #return value. gives nil if not == ws
   end
   def tokenized
-    "<#{@type},#{@value}>\n"
+    if style == "default" : "<#{@type}, #{@value}>\n"
+      elsif style == "brackets" : "[#{@type}: #{@value}]\n"
+      elsif style == "indent" : "\t#{@type}: #{@value}\n"
+      elsif style == "plain" : "#{@type}, #{@value}\n"
+    end
   end
 end
 #Following should only run when not being used as a require from somewhere else
