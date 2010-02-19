@@ -81,7 +81,7 @@ class Buffer
       if token.match(/\A\d+\z/) : end #run until you get a nondigit
       if token.match(/\A[a-zA-Z][a-zA-Z0-9_]*\z/) : end #run until you get an invalid
     end
-    if token.identifier? : end #@@ids[@@.id] = value, value = @@.id, @@.id += 1; 
+    if token.identifier? : end #@@ids[@@ids.length] = value; value = @@ids.length-1; 
     token.tokenized #return
   end
   def id_table
@@ -134,8 +134,10 @@ if ARGV.size == 0
   puts instructions
 else
   opts = {}
-  opts[:target] = "#{ARGV[0]}_lex.txt"
-  args = ARGV.delete opts[:target]
+  opts[:source] = "#{ARGV[0]}"
+  ARGV[0].match()
+  opts[:target] = "#{}_lex.txt"
+  args = ARGV.delete_at 0 #remove the program file from the arguments
   ARGV.each do |arg|
     case arg
     when "-d" : opts[:dirty] = true
