@@ -86,7 +86,7 @@ class Buffer
   end
   def id_table
     str = ""
-    @@ids.each_with_index do |id|
+    @@ids.each_with_index do |id, i|
       str << id.tokenized(@style)
     end
     str
