@@ -22,7 +22,7 @@ class Lexer
   def emit(str)
     if @options[:stdout]
       print str
-    elsif options[:target]
+    elsif @options[:target]
       File.open(@options[:target], 'w') {|f| f.write(str) }
     end
   end
@@ -32,7 +32,8 @@ class Lexer
       if !File.exists?(target) || @options[:overwrite]
         File.new(target, "w") 
       else
-        puts "The target file already exists.\nRun with -f or -o if you want to overwrite it."
+        puts "The target file already exists.
+        Run with -f or -o if you want to overwrite it."
         exit(0)
       end
     end
@@ -83,14 +84,10 @@ class Buffer
     elsif token.whitespace?
       #skip through and restart the if statement
     else
-      emit "Token: #{} was not recognized as valid. Terminating run."
-      exit(0)
+      puts "Token: #{} was not recognized as valid. Terminating run."
+      exit(0) #can't use emit here
     end
     ##
-#      if token == "\"" : end #run until you get another "
-#      if token.match(/\A\d+\z/) : end #run until you get a nondigit
-#      if token.match(/\A[a-zA-Z][a-zA-Z0-9_]*\z/) : end #run until you get an invalid
-#    if token.identifier? : end #@@ids[@@ids.length] = value; value = @@ids.length-1; 
     token.tokenized #return value
   end
   def id_table
