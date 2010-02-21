@@ -58,38 +58,60 @@ class Buffer
     @dirty
   end
   def finished?
-    @current_head == @contents.length #Meaning current is beyond referenceable characters
+    @current_head >= @contents.length #Meaning current is beyond referenceable characters
   end
   def lookahead #Returns the character one ahead of the lookahead
     if @current+1 < @contents.size
-      @contents[@current+1,0]
+      Token.new(@contents[@current+1,1]) #token so that it can call the _? methods
     else
       nil
     end
   end
-  def get_next_token
+  def advance
+    @current += 1
+  end
+  def back_up
+    @current -= 1
+  end
+  def update_head
+    @current_head = @current
+  end
+  def get_next_token ##WIP
+    if finished? : return nil end #Returns a nil if past end and still being called
     token = Token.new("")
-    @current = @current_head-1 #start at -1 such that it can increase to be ==
-    ##
+    @current = @current_head #make certain that current == head to start with
     token << @contents[@current, 1]
     if token.quote?
-      #match until endquote and return it
+      advance until (Token.new(lookahead).quote? || lookahead == nil)
+      token = Token.new(@contents[@current_head..@current])
+      advance #should be right
+      update_head
     elsif token.digit?
-      #match until !lookahead.digit? and return it
+      advance while lookahead.digit?
+      token = Token.new(@contents[@current_head..@current])
+      advance #should be right
+      update_head
     elsif token.identifier_head?
-      #match until !lookahead.identifier_tail?
-      #if this matches a keyword, emit as a keyword
+      advance while lookahead.identifier_tail?
+      token = Token.new(@contents[@current_head..@current]) #this is totally factorable
+      advance #this bit might be factorable too.. what about token.assemble or something
+      update_head
     elsif token.symbol?
-      #if token + lookahead also matches a symbol, do that, else just the first digit
+      if Token.new(token << lookahead).symbol? : advance end
+      token = Token.new(@contents[@current_head..@current])
+      advance
+      update_head
     elsif token.whitespace?
-      #skip through and restart the if statement
+      advance while lookahead.whitespace?
+      advance
+      update_head
+      get_next_token #recursion, not great, but should be impossible to get more than one level deep
     else
       puts "Token: #{} was not recognized as valid. Terminating run."
       exit(0) #can't use emit here
     end
-    ##
     token.tokenized #return value
-  end
+  end ##/WIP
   def id_table
     str = ""
     @@ids.each_with_index do |id, i|
