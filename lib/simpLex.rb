@@ -67,22 +67,31 @@ class Buffer
     end
   end
   def get_next_token
-    token = ''
+    token = Token.new("")
     @current = @current_head-1 #start at -1 such that it can increase to be ==
-    while true #requires a break when you find good stuff
-      @current += 1 #increase it
-      token = Token.new(@contents[@current_head..@current])
-      nextchar = lookahead
-      if token.whitespace? : #handle it
-        elsif token.keyword? : #handle it } THESE ALL MEAN SET TYPE AND VALUE AND BREAK
-        elsif token.symbol? : #handle it
-      end
-      if token == "\"" : end #run until you get another "
-      if token.match(/\A\d+\z/) : end #run until you get a nondigit
-      if token.match(/\A[a-zA-Z][a-zA-Z0-9_]*\z/) : end #run until you get an invalid
+    ##
+    token << @contents[@current, 1]
+    if token.quote?
+      #match until endquote and return it
+    elsif token.digit?
+      #match until !lookahead.digit? and return it
+    elsif token.identifier_head?
+      #match until !lookahead.identifier_tail?
+      #if this matches a keyword, emit as a keyword
+    elsif token.symbol?
+      #if token + lookahead also matches a symbol, do that, else just the first digit
+    elsif token.whitespace?
+      #skip through and restart the if statement
+    else
+      emit "Token: #{} was not recognized as valid. Terminating run."
+      exit(0)
     end
-    if token.identifier? : end #@@ids[@@ids.length] = value; value = @@ids.length-1; 
-    token.tokenized #return
+    ##
+#      if token == "\"" : end #run until you get another "
+#      if token.match(/\A\d+\z/) : end #run until you get a nondigit
+#      if token.match(/\A[a-zA-Z][a-zA-Z0-9_]*\z/) : end #run until you get an invalid
+#    if token.identifier? : end #@@ids[@@ids.length] = value; value = @@ids.length-1; 
+    token.tokenized #return value
   end
   def id_table
     str = ""
@@ -101,6 +110,12 @@ class Token
   def initialize(text)
     @text = text
   end
+  def << (str)
+    @text << str
+  end
+  def quote?
+    @text.match( /\A"\z/ )
+  end
   def keyword?
     @@keywords.index @text #return value. gives nil if not present
   end
@@ -111,10 +126,10 @@ class Token
     @text.match(/\A[\n\t\ ]*\z/) #return value. gives nil if not == ws
   end
   def tokenized(style = :default)
-    if style == :default : "<#{@type}, #{@value}>\n"
+    if style == :default : "#{@type} #{@value}\n"
       elsif style == :brackets : "[#{@type}: #{@value}]\n"
       elsif style == :indent : "\t#{@type}: #{@value}\n"
-      elsif style == :plain : "#{@type}, #{@value}\n"
+      elsif style == :angle : "<#{@type}, #{@value}>\n"
     end
   end
 end
