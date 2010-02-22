@@ -164,29 +164,31 @@ Usage:\n\t$ruby simpLex filename [opts]\nOptions:
 \t-o - Overwrite: Will overwrite the output file
 \tNOTE: -a, -s, and -f all force a full run of the analyzer
 \t\t Also, -s has precedence in determining output type\n"
-if ARGV.size == 0
-  puts instructions
-else
-  opts = {}
-  opts[:source] = "#{ARGV[0]}"
-  ARGV[0].match()
-  opts[:target] = "#{}_lex.txt"
-  args = ARGV.delete_at 0 #remove the program file from the arguments
-  ARGV.each do |arg|
-    case arg
-    when "-d" : opts[:dirty] = true
-    when "-a" : opts[:full] = true
-    when "-o" : opts[:overwrite] = true
-    when "-s"
-      opts[:stdout] = true
-      opts[:full] = true
-    when arg[0..1]=="-f" : #broken
-      opts[:overwrite] = true
-      opts[:target] = arg[2..-1]
-      puts "this should not be seen(L150)"
-    else
-      puts "Unrecognized option: '#{arg}'. Attempting run anyway."
+if $0 == __FILE__
+  if ARGV.size == 0
+    puts instructions
+  else
+    opts = {}
+    opts[:source] = "#{ARGV[0]}"
+    ARGV[0].match()
+    opts[:target] = "#{}_lex.txt"
+    args = ARGV.delete_at 0 #remove the program file from the arguments
+    ARGV.each do |arg|
+      case arg
+      when "-d" : opts[:dirty] = true
+      when "-a" : opts[:full] = true
+      when "-o" : opts[:overwrite] = true
+      when "-s"
+        opts[:stdout] = true
+        opts[:full] = true
+      when arg[0..1]=="-f" : #broken
+        opts[:overwrite] = true
+        opts[:target] = arg[2..-1]
+        puts "this should not be seen(L150)"
+      else
+        puts "Unrecognized option: '#{arg}'. Attempting run anyway."
+      end
     end
+    Lexer.new(ARGV[0], opts)
   end
-  Lexer.new(ARGV[0], opts)
 end
