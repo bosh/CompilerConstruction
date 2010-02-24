@@ -43,19 +43,16 @@ end
 class Buffer
   @@ids = []
   attr_accessor :contents, :current, :current_head, :style
-  def initialize(str, dirty, style = :default)
+  def initialize(str, dirty = false, style = :default)
     @contents = str
     @current = @current_head = 0
     @style = style
-    clean! unless dirty? #Heh heh heh
+    clean! unless dirty #Heh heh heh
   end
   def clean!
     #@contents.gsub!(/#[^\n]*\n/, "")  #Strip ruby style comments # to \n
     #@contents.gsub!(/\/\*.*?(\*\/|\z)/m, "") #Strip java style comments /* to */
     @contents.gsub!(/\{.*?(\}|\z)/m, "") #Strip {} comments, including nonclosing terminal ones
-  end
-  def dirty?
-    @dirty
   end
   def finished?
     @current_head >= @contents.length #Meaning current is beyond referenceable characters
@@ -76,7 +73,7 @@ class Buffer
   def update_head
     @current_head = @current
   end
-  def get_next_token ##WIP
+  def get_next_token
     if finished? : return nil end #Returns a nil if past end and still being called
     token = Token.new("")
     @current = @current_head #make certain that current == head to start with
@@ -87,12 +84,12 @@ class Buffer
       advance #should be right
       update_head
     elsif token.digit?
-      advance while lookahead.digit?
+      advance while lookahead && lookahead.digit?
       token = Token.new(@contents[@current_head..@current])
       advance #should be right
       update_head
     elsif token.identifier_head?
-      advance while lookahead.identifier_tail?
+      advance while lookahead && lookahead.identifier_tail?
       token = Token.new(@contents[@current_head..@current]) #this is totally factorable
       advance #this bit might be factorable too.. what about token.assemble or something
       update_head
@@ -102,7 +99,7 @@ class Buffer
       advance
       update_head
     elsif token.whitespace?
-      advance while lookahead.whitespace?
+      advance while lookahead && lookahead.whitespace?
       advance
       update_head
       get_next_token #recursion, not great, but should be impossible to get more than one level deep
@@ -110,8 +107,8 @@ class Buffer
       puts "Token: #{} was not recognized as valid. Terminating run."
       exit(0) #can't use emit here
     end
-    token.tokenized #return value
-  end ##/WIP
+    token.tokenized
+  end
   def id_table
     str = ""
     @@ids.each_with_index do |id, i|
@@ -126,11 +123,22 @@ class Token
   @@keywords = %w(and begin forward div do else end
     for function if array mod not of or procedure program
     record then to type var while)
-  def initialize(text)
+  def initialize(text, type = "", value = "")
     @text = text
+    @type = type
+    @value = value
   end
   def << (str)
     @text << str
+  end
+  def identifier_head?
+    @text.match( /\A[a-zA-Z]\z/ )
+  end
+  def identifier_tail?
+    @text.match( /\A[a-zA-Z0-9_]*\z/ )
+  end
+  def digit?
+    @text.match( /\A[0-9]+\z/ )
   end
   def quote?
     @text.match( /\A"\z/ )
