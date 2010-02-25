@@ -156,17 +156,16 @@ class Token
   end
 end
 #Following should only run when not being used as a require from somewhere else
-instructions = "\nWelcome to simpLex,\n
+instructions = "\nWelcome to simpLex,
 \ta simple Ruby lexical analyzer for a basic Pascal grammar.
 Usage:\n\t$ruby simpLex filename [opts]\nOptions:
-\t-f\"_filename_\" - (OPT) Specifies a file to save output to.
 \t\tThe defaut file is \"input_file\"_tokens.txt
 \t-d - Dirty: Comments will not be automatically stripped from the file
 \t-a - All: Forces a full lexical analysis of the file
 \t-s - StdOut: Prints output to the command line (no save to a file)
 \t-o - Overwrite: Will overwrite the output file
 \tNOTE: -a, -s, and -f all force a full run of the analyzer
-\t\t Also, -s has precedence in determining output type\n"
+\t      -s has precedence in determining output type\n"
 if $0 == __FILE__
   if ARGV.size == 0
     puts instructions
