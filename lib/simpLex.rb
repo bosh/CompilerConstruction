@@ -167,7 +167,7 @@ Usage:\n\t$ruby simpLex filename [opts]\nOptions:
 \tNOTE: -a, -s, and -f all force a full run of the analyzer
 \t      -s has precedence in determining output type\n"
 if $0 == __FILE__
-  if ARGV.size == 0 || ARGV[0] == -h || ARGV[0] == --help
+  if ARGV.size == 0 || ARGV[0] == "-h" || ARGV[0] == "--help"
     puts instructions
   else
     opts = {}
