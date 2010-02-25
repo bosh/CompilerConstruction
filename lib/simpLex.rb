@@ -21,7 +21,7 @@ class Lexer
     if @options[:stdout]
       print str
     elsif @options[:target]
-      File.open(@options[:target], 'w+') {|f| f.write(str) }
+      File.open(@options[:target], 'a') {|f| f.write(str) }
     end
   end
   def prepare_outfile
