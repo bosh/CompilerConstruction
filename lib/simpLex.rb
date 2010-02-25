@@ -10,7 +10,6 @@ class Lexer
     until complete?
       emit next_token
     end
-    emit @buffer.id_table
   end
   def complete?
     @buffer.finished?
@@ -22,7 +21,7 @@ class Lexer
     if @options[:stdout]
       print str
     elsif @options[:target]
-      File.open(@options[:target], 'w') {|f| f.write(str) }
+      File.open(@options[:target], 'w+') {|f| f.write(str) }
     end
   end
   def prepare_outfile
@@ -122,7 +121,7 @@ class Token
     @text = text
     @type = type
     @value = value
-    confirm_type!
+    #confirm_type!
   end
   def << (str)
     @text << str
@@ -174,8 +173,8 @@ if $0 == __FILE__
   else
     opts = {}
     opts[:source] = "#{ARGV[0]}"
-    ARGV[0].match()
-    opts[:target] = "#{}_lex.txt"
+    ARGV[0].match(/\A(.*)\..*\z/)
+    opts[:target] = "#{$1}_lex.txt"
     args = ARGV.delete_at 0 #remove the program file from the arguments
     ARGV.each do |arg|
       case arg
@@ -188,11 +187,10 @@ if $0 == __FILE__
       when arg[0..1]=="-f" : #broken
         opts[:overwrite] = true
         opts[:target] = arg[2..-1]
-        puts "this should not be seen(L150)"
       else
         puts "Unrecognized option: '#{arg}'. Attempting run anyway."
       end
     end
-    Lexer.new(ARGV[0], opts)
+    Lexer.new(opts[:source], opts)
   end
 end
