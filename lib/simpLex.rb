@@ -1,9 +1,14 @@
 class Lexer
   attr_accessor :buffer, :options
   def initialize(file, options = {})
-    @options = options
-    @buffer = Buffer.new(File.open(file).read, @options[:dirty])
-    if options[:full] : full_analysis() end
+    if File.exists?(file)
+      @options = options
+      @buffer = Buffer.new(File.open(file).read, @options[:dirty])
+      if options[:full] : full_analysis() end
+    else
+      puts "Cannot find the input file: #{file}\nType Use --help for more options."
+      exit(0)
+    end
   end
   def full_analysis
     prepare_outfile
