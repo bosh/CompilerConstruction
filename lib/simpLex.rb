@@ -1,4 +1,3 @@
-#(1..100).each{|i| puts((i%3==0) ? ((i%5==0)? "fizzbuzz" : "fizz" ) : ((i%5==0)? "buzz" : i) )} # But first, a short: Lolbuzz
 class Lexer
   attr_accessor :buffer, :options
   def initialize(file, options = {})
@@ -17,7 +16,7 @@ class Lexer
     @buffer.finished?
   end
   def next_token
-    emit @buffer.get_next_token
+    @buffer.get_next_token.tokenized
   end
   def emit(str)
     if @options[:stdout]
@@ -28,7 +27,7 @@ class Lexer
   end
   def prepare_outfile
     if !@options[:stdout]
-      target = @options[:target]
+      target = @options[:target] || "simpLex_out.txt"
       if !File.exists?(target) || @options[:overwrite]
         File.new(target, "w") 
       else
@@ -44,14 +43,12 @@ class Buffer
   @@ids = []
   attr_accessor :contents, :current, :current_head, :style
   def initialize(str, dirty = false, style = :default)
-    @contents = str
+    @contents = str.strip
     @current = @current_head = 0
     @style = style
     clean! unless dirty #Heh heh heh
   end
   def clean!
-    #@contents.gsub!(/#[^\n]*\n/, "")  #Strip ruby style comments # to \n
-    #@contents.gsub!(/\/\*.*?(\*\/|\z)/m, "") #Strip java style comments /* to */
     @contents.gsub!(/\{.*?(\}|\z)/m, "") #Strip {} comments, including nonclosing terminal ones
   end
   def finished?
@@ -79,42 +76,40 @@ class Buffer
     @current = @current_head #make certain that current == head to start with
     token << @contents[@current, 1]
     if token.quote?
-      advance until (Token.new(lookahead).quote? || lookahead == nil)
-      token = Token.new(@contents[@current_head..@current])
+      advance until (lookahead == nil || lookahead.quote?)
+      advance
+      text = @contents[@current_head..@current]
+      token = Token.new(text, "LITERAL", text)
       advance #should be right
       update_head
     elsif token.digit?
       advance while lookahead && lookahead.digit?
-      token = Token.new(@contents[@current_head..@current])
+      text = @contents[@current_head..@current]
+      token = Token.new(text, "INT", text)
       advance #should be right
       update_head
     elsif token.identifier_head?
       advance while lookahead && lookahead.identifier_tail?
-      token = Token.new(@contents[@current_head..@current]) #this is totally factorable
+      text = @contents[@current_head..@current]
+      token = Token.new(text, "ID", text)
       advance #this bit might be factorable too.. what about token.assemble or something
       update_head
     elsif token.symbol?
-      if Token.new(token << lookahead).symbol? : advance end
-      token = Token.new(@contents[@current_head..@current])
+      if lookahead && Token.new(token << lookahead.text).symbol? : advance end
+      text = @contents[@current_head..@current]
+      token = Token.new(text, "SYMBOL", text)
       advance
       update_head
     elsif token.whitespace?
       advance while lookahead && lookahead.whitespace?
       advance
       update_head
-      get_next_token #recursion, not great, but should be impossible to get more than one level deep
+      token = get_next_token #recursion, not great, but should be impossible to get more than one level deep
     else
       puts "Token: #{} was not recognized as valid. Terminating run."
       exit(0) #can't use emit here
     end
-    token.tokenized
-  end
-  def id_table
-    str = ""
-    @@ids.each_with_index do |id, i|
-      str << id.tokenized(@style)
-    end
-    str
+    token
   end
 end
 class Token
@@ -127,6 +122,7 @@ class Token
     @text = text
     @type = type
     @value = value
+    confirm_type!
   end
   def << (str)
     @text << str
