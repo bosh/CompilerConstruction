@@ -88,6 +88,12 @@ class Buffer
       update_head
     elsif token.digit?
       advance while lookahead && lookahead.digit?
+      if lookahead && lookahead.identifier_tail? #if it's a nonterminal that is also a nondigit
+        text = @contents[@current_head..@current]
+        update_head
+        puts "INT Token: #{text} is followed by nondigits (#{lookahead.text}). Terminating run."
+        exit(0)
+      end
       text = @contents[@current_head..@current]
       token = Token.new(text, "INT", text)
       advance #should be right
@@ -129,12 +135,12 @@ class Token
     @text = text
     @type = type
     @value = value
-    confirm_type!
+    specify_type!
   end
   def << (str)
     @text << str
   end
-  def confirm_type!
+  def specify_type!
     if keyword?
       @type = "KEYWORD"
     elsif string_literal?
@@ -197,7 +203,8 @@ Usage:\n\t$ruby simpLex filename [opts]\nOptions:
 \t-a - All: Forces a full lexical analysis of the file
 \t-s - StdOut: Prints output to the command line (no save to a file)
 \t-o - Overwrite: Will overwrite the output file
-\tNOTE: -a, -s, and -f all force a full run of the analyzer
+\t\tID, INT, SYMBOL, LITERAL\n
+\tNOTE: -a and -s both force a full run of the analyzer
 \t      -s has precedence in determining output type\n"
 if $0 == __FILE__
   if ARGV.size == 0 || ARGV[0] == "-h" || ARGV[0] == "--help"
