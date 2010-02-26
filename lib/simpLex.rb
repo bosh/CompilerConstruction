@@ -147,7 +147,7 @@ class Token
   def identifier_tail?;   @text.match( /\A[a-zA-Z0-9_]*\z/ )  end
   def digit?;             @text.match( /\A[0-9]+\z/ )         end
   def quote?;             @text.match( /\A"\z/ )              end
-  def whitespace?         @text.match( /\A[\n\t\ ]*\z/ )      end
+  def whitespace?;        @text.match( /\A[\n\t\ ]*\z/ )      end
   
   def tokenized(style = :default)
     if      style == :default   : "#{@type} #{@value}\n"
