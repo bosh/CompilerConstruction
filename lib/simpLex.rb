@@ -110,7 +110,7 @@ class Buffer
       update_head
       token = get_next_token #recursion, not great, but should be impossible to get more than one level deep
     else
-      puts "Token: #{} was not recognized as valid. Terminating run."
+      puts "Token: #{token.text} was not recognized as valid. Terminating run."
       exit(0) #can't use emit here
     end
     token
