@@ -122,14 +122,43 @@ class Token
   @@keywords = %w(and begin forward div do else end
     for function if array mod not of or procedure program
     record then to type var while)
+  @@relops = %w(= < <= >= > <>)
+  @@ariths = %w(+ * -)
+  @@groups = %w( ( ) [ ] )
   def initialize(text, type = "", value = "")
     @text = text
     @type = type
     @value = value
-    #confirm_type!
+    confirm_type!
   end
   def << (str)
     @text << str
+  end
+  def confirm_type!
+    if keyword?
+      @type = "KEYWORD"
+    elsif string_literal?
+      @type = "STR"
+    elsif relational_op?
+      @type = "RELOP"
+    elsif arithmetic_op?
+      @type = "ARITHOP"
+    end
+    elsif grouping_symbol?
+      @type = "GROUP"
+    end
+  end
+  def grouping_symbol?
+    @@groups.index(@text)
+  end
+  def relational_op?
+    @@relops.index(@text)
+  end
+  def arithmetic_op?
+    @@ariths.index(@text)
+  end
+  def string_literal?
+    @text.match( /\A\".*\"\z/m )
   end
   def identifier_head?
     @text.match( /\A[a-zA-Z]\z/ )
