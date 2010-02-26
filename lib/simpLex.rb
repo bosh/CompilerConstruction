@@ -143,7 +143,6 @@ class Token
       @type = "RELOP"
     elsif arithmetic_op?
       @type = "ARITHOP"
-    end
     elsif grouping_symbol?
       @type = "GROUP"
     end
