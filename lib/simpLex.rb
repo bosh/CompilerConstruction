@@ -5,7 +5,7 @@ class Lexer
       @options  = options
       @buffer   = Buffer.new( File.open(file).read, @options[:dirty] )
       if @options[:internal] : @token_list = [] end
-      if options[:full] : full_analysis() end
+      if @options[:full] : full_analysis() end
     else
       puts "Cannot find the input file: #{file}\nType Use --help for more options."
       exit(0)
@@ -34,7 +34,7 @@ class Lexer
       if !File.exists?(target) || @options[:overwrite]
         File.new(target, "w") 
       else
-        puts "The target file already exists.
+        puts "simpLex: The target file already exists.
         Run with -f or -o if you want to overwrite it."
         exit(0)
       end
@@ -107,7 +107,7 @@ class Buffer
       token = get_next_token #recursion, not great, but should be impossible to get more than one level deep
     else
       puts "Token: #{token.text} was not recognized as valid. Terminating run."
-      exit(0) #can't use emit here
+      exit(0)
     end
     token
   end
@@ -162,7 +162,9 @@ class Token
 end
 
 #Following bit run only when not being used as a require from somewhere else
-instructions = "\nWelcome to simpLex,
+if $0 == __FILE__
+  if ARGV.size == 0 || ARGV[0] == "-h" || ARGV[0] == "--help"
+    puts "Welcome to simpLex,
 \ta simple Ruby lexical analyzer for a basic Pascal grammar.
 Usage:\n\t$ruby simpLex filename [opts]\nOptions:
 \t\tThe defaut file is \"input_file\"_tokens.txt
@@ -172,9 +174,6 @@ Usage:\n\t$ruby simpLex filename [opts]\nOptions:
 \t-o - Overwrite: Will overwrite the output file\n
 \tNOTE: -a and -s both force a full run of the analyzer
 \t      -s has precedence in determining output type\n"
-if $0 == __FILE__
-  if ARGV.size == 0 || ARGV[0] == "-h" || ARGV[0] == "--help"
-    puts instructions
   else
     opts = {}
     ARGV[0].match(/\A(.*)\..*\z/)
