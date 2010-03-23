@@ -62,8 +62,10 @@ class Parser
       end
     end
   end
-  def lexer_token_stream
-    #Lexer.new
+  def lexer_token_stream(filename)
+    Lexer.new(filename) do |lex|
+      
+    end
   end
 end
 
