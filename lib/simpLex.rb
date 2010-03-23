@@ -1,6 +1,6 @@
 class Lexer
   attr_accessor :buffer, :options, :token_list
-  def initialize( file, options = {} )
+  def initialize( file, options = {} ) #call with options[:internal] = true if you want the lex'd stream available
     if File.exists?(file)
       @options  = options
       @buffer   = Buffer.new( File.open(file).read, @options[:dirty] )
@@ -21,7 +21,7 @@ class Lexer
       emit next_token
     end
   end
-  def emit( token)
+  def emit( token )
     if @options[:stdout] : print token.tokenized
     elsif @options[:internal]
       @token_list << token
