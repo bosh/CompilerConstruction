@@ -29,7 +29,7 @@ class Lexer
     end
   end
   def prepare_outfile
-    if !@options[:stdout]
+    if !@options[:stdout] && !@options[:internal]
       target = @options[:target] || "simpLex_out.txt"
       if !File.exists?(target) || @options[:overwrite]
         File.new(target, "w") 

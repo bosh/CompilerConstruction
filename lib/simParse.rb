@@ -34,10 +34,10 @@ class Parser
     @filename = filename
     @current_token = @token_head = 0
     @tokens = []
-    if opts[:filename]
-      import_token_stream(opts[:filename])
+    if opts[:from_tokens]
+      import_token_stream(@filename)
     else
-      lexer_token_stream
+      lexer_token_stream(@filename)
     end
   end
   def import_token_stream(filename)
@@ -68,6 +68,7 @@ class Parser
 end
 
 if $0 == __FILE__
+  parser = Parser.new("C:/Users/Bosh/Desktop/txt.txt")
   #then run the file and use command line args
   #options should be: (Stdout|Fileout[Overwrite?]|Internal) and (Full|No-run)
   #defaults being same as simpLex's
