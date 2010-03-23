@@ -23,8 +23,7 @@ class Lexer
   end
   def emit( token )
     if @options[:stdout] : print token.tokenized
-    elsif @options[:internal]
-      @token_list << token
+    elsif @options[:internal] : @token_list << token
     elsif @options[:target]
       File.open(@options[:target], 'a') {|f| f.write(token.tokenized) }
     end
