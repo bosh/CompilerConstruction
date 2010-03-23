@@ -63,12 +63,12 @@ class Parser
     end
   end
   def lexer_token_stream(filename)
-    Lexer.new(filename) do |lex|
-      
-    end
+    lex = Lexer.new(filename, {:internal => true, :full => true})
   end
 end
 
 if $0 == __FILE__
   #then run the file and use command line args
+  #options should be: (Stdout|Fileout[Overwrite?]|Internal) and (Full|No-run)
+  #defaults being same as simpLex's
 end
