@@ -29,16 +29,19 @@ class Node
 end
 
 class Parser
-  attr_accessor :filename, :tokens, :current_token, :token_head
+  attr_accessor :filename, :tokens, :current_token, :token_head, :options. :tree
   def initialize(filename, opts = {})
+    @tree = nil
     @filename = filename
     @current_token = @token_head = 0
     @tokens = []
-    if opts[:from_tokens]
+    @options = opts
+    if @options[:from_tokens]
       import_token_stream(@filename)
     else
       lexer_token_stream(@filename)
     end
+    if @options[:full] : parse; end
   end
   def import_token_stream(filename)
     stream = []
@@ -65,8 +68,14 @@ class Parser
   def lexer_token_stream(filename)
     lex = Lexer.new(filename, {:internal => true, :full => true})
   end
+  def parse
+    #the magic
+    #match(start_symbol)
+    @tree = root
+  end
 end
 
+$start_symbol = "Program"
 if $0 == __FILE__
   if ARGV.size == 0 || ARGV[0] == "-h" || ARGV[0] == "help"
     puts "Welcome to simParse,
@@ -78,6 +87,7 @@ if $0 == __FILE__
 \t\t-o\t\t- If mode -f, will overwrite any file with the same target name
 \t\t[-a|-n]\t- Full run OR no run. No run is default\n"
   else
+    opts = {}
     filename = ARGV[0]
     ARGV.each do |arg|
       case arg
@@ -90,6 +100,6 @@ if $0 == __FILE__
         puts "Unrecognized option: '#{arg}'. Attempting run anyway."
       end
     end
-    parser = Parser.new(ARGV[0])
+    parser = Parser.new(ARGV[0], opts)
   end
 end
