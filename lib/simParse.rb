@@ -9,6 +9,9 @@ class Tree
   def full_print
     @root.tree_print
   end
+  def full_stringify
+    @root.tree_stringify
+  end
 end
 
 class Node
@@ -22,6 +25,12 @@ class Node
     level.times{print "\t"}
     puts @text
     @contents.each{|c| c.tree_print(level+1)}
+  end
+  def tree_stringify(level = 0)
+    str = ""
+    level.times{str << "\t"}
+    str << @text
+    @contents.each{|c| str << tree_stringify(level+1)}
   end
   def orphan!
     @parent = nil
@@ -42,6 +51,7 @@ class Parser
       lexer_token_stream(@filename)
     end
     if @options[:full] : parse; end
+    if @options[:stdout] || @options[:full] : emit_tree; end
   end
   def import_token_stream(filename)
     stream = []
@@ -67,6 +77,10 @@ class Parser
   end
   def lexer_token_stream(filename)
     lex = Lexer.new(filename, {:internal => true, :full => true})
+  end
+  def emit_tree
+    if @options[:stdout] : @tree.full_print; end
+    if @options[:file] : text = @tree.full_stringify; end
   end
   def parse
     #the magic
