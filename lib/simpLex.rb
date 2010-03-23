@@ -137,6 +137,7 @@ class Token
   end
   
   def << (str);           @text << str  end
+  def to_terminal;        @value        end
   def grouping_symbol?;   @@groups.index(@text)   end
   def relational_op?;     @@relops.index(@text)   end
   def arithmetic_op?;     @@ariths.index(@text)   end
