@@ -4,7 +4,7 @@ class Tree
   attr_accessor :root
   def initialize(node)
     @root = node #would be great to make this non-destructive via full copying of data, but that doesn't matter for a one-shot
-    @root.orphan!
+    @root.orphan! #technically unnecessary
   end
   def full_print
     @root.tree_print
@@ -68,8 +68,28 @@ class Parser
 end
 
 if $0 == __FILE__
-  parser = Parser.new("C:/Users/Bosh/Desktop/txt.txt")
-  #then run the file and use command line args
-  #options should be: (Stdout|Fileout[Overwrite?]|Internal) and (Full|No-run)
-  #defaults being same as simpLex's
+  if ARGV.size == 0 || ARGV[0] == "-h" || ARGV[0] == "help"
+    puts "Welcome to simParse,
+\ta simple parser for a pascal-variant grammar
+\nsimParse works together with simpLex to analyze and parse your programs.
+\n\tTo use:\n\t\truby simParse _filename_ [options]
+\n\tOptions:
+\t\t[-s|-f]\t- Stdout OR fileout. File out will be _filename_parsed.txt
+\t\t-o\t\t- If mode -f, will overwrite any file with the same target name
+\t\t[-a|-n]\t- Full run OR no run. No run is default\n"
+  else
+    filename = ARGV[0]
+    ARGV.each do |arg|
+      case arg
+        when "-n" : opts[:full]      = false
+        when "-a" : opts[:full]       = true
+        when "-o" : opts[:overwrite]  = true
+        when "-s" : opts[:stdout]     = opts[:full] = true
+        when "-f" : opts[:file]     = opts[:full] = true
+      else
+        puts "Unrecognized option: '#{arg}'. Attempting run anyway."
+      end
+    end
+    parser = Parser.new(ARGV[0])
+  end
 end
