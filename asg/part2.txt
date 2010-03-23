@@ -1,0 +1,44 @@
+ Project Phase 2:
+Syntax Analysis: Parser
+Your tasks:
+
+1. Pick a parser generator (yacc, bison, ...).
+
+2. Use this grammar  with the parser generator you picked, together with your previous lexer.
+
+3. At that point of the project, you need to generate a parse tree of the program: Abstract Syntax Tree (AST). The leaves of AST are the necessary terminals (represented at this point by lexeme token pairs) and, the internal nodes are labeled with the kind of sentence represented  by the subtree.
+
+4. After you build the tree, you need to write a function to print it in a text file. The best way to put a tree in a text file is to have a format similar to the tree command Unix or Linux. You do not need to draw the branches, you can use spaces and tabs to include children.  For example the following example shows a tree with three levels: root, intermediate, and leaves.
+
+Example: Root has two children: intermediate 1 and intermediate 2. Intermediate 1 has two children A and B,  while intermediate 2 has one children C.
+ROOT
+         INTERMEDIATE 1
+                           A
+                           B
+         INTERMEDIATE 2
+                           C 
+The Parse Tree:
+
+The tree consists for several nodes connected. An example pseudo-C definition of a tree node can be:
+typedef struct _node {
+enum { PROGRAM, BLOCK, PROCEDURE_DECLARATION, ...} tag;
+union {
+           struct {
+                          put here field sneeded for PROGRAM
+                     } PROGRAM;
+           struct {
+                            put here fields needed for BLOCK
+                       } BLOCK;
+                   ...
+             } fields;
+} ast_node;
+ 
+
+Note that you may need to add more fields as we progress with this project. The nodes will be connected to form the tree.
+What you need to Submit:
+
+   1. Input to your parser generator
+   2. Modified input to your lexical analyzer generator (if any)
+   3. The output of the parser generator
+   4. Any extra code you have written external to the above files
+   5. A small README file to tell us: which generators you used (if any), the command lines to compile your parser, and the command line to run your project.
