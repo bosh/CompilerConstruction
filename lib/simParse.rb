@@ -1,3 +1,5 @@
+require "simpLex.rb"
+
 class Tree
   attr_accessor :root
   def initialize(node)
@@ -8,6 +10,7 @@ class Tree
     @root.tree_print
   end
 end
+
 class Node
   attr_accessor :contents, :parent, :text
   def initialize(parent, text)
