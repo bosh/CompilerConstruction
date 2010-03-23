@@ -31,7 +31,7 @@ class Node
     level.times{str << "\t"}
     str << @text
     @contents.each{|c| str << tree_stringify(level+1)}
-  end
+    str
   def orphan!
     @parent = nil
   end
