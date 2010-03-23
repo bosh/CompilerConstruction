@@ -27,3 +27,20 @@ class Node
     @parent = nil
   end
 end
+
+class Parser
+  attr_accessor :filename, :tokens, :current_token, :token_head
+  def initialize(filename)
+    @filename = filename
+    @current_token = @token_head = 0
+    @tokens = []
+    load_token_stream
+  end
+  def load_token_stream
+    #open file
+    #each line do
+    #create a token and put into @tokens
+    #close file
+  end
+end
+
