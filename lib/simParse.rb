@@ -44,3 +44,6 @@ class Parser
   end
 end
 
+if $0 == __FILE__
+  #then run the file and use command line args
+end
