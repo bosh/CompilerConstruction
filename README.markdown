@@ -1,5 +1,5 @@
 simpLex
------
+=====
     A ruby lexer for a pseudopascal language
 
 ### Usage:
@@ -16,7 +16,7 @@ simpLex
     -s has precedence in determining output type
 
 simParse
------
+=====
     A ruby grammar constructor and evaluator built around a pascal language variant, tokenized by simpLex.rb
 
 ### Usage:
