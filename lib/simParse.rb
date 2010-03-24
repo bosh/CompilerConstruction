@@ -38,13 +38,15 @@ class Node
 end
 
 class Parser
-  attr_accessor :filename, :tokens, :current_token, :token_head, :options. :tree
+  attr_accessor :filename, :options, :grammar_rules
+  attr_accessor :tree, :tokens, :current_token, :token_head
   def initialize(filename, opts = {})
+    @options = opts
     @tree = nil
     @filename = filename
+    @grammar_rules = load_grammar_rules(@options{:grammar_file})
     @current_token = @token_head = 0
     @tokens = []
-    @options = opts
     if @options[:from_tokens]
       import_token_stream(@filename)
     else
@@ -52,6 +54,9 @@ class Parser
     end
     if @options[:full] : parse; end
     if @options[:stdout] || @options[:full] : emit_tree; end
+  end
+  def load_grammar_rules(filename)
+    GrammarLoader.new(filename)
   end
   def import_token_stream(filename)
     stream = []
@@ -116,10 +121,12 @@ if $0 == __FILE__
         when "-o" : opts[:overwrite]  = true
         when "-s" : opts[:stdout]     = opts[:full] = true
         when "-f" : opts[:file]     = opts[:full] = true
+        when "-g" : opts[:grammar_file] = filename#.drop_extension.add__grammar.grm #BROKEN FOR NOW
       else
         puts "Unrecognized option: '#{arg}'. Attempting run anyway."
       end
     end
+    opts[:grammar_file] ||= "simParse_grammar.grm"
     parser = Parser.new(ARGV[0], opts)
   end
 end
