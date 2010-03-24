@@ -89,7 +89,7 @@ class Parser
     @options = opts
     @tree = nil
     @filename = filename
-    @grammar_rules = load_grammar_rules(@options{:grammar_file})
+    @grammar_rules = load_grammar_rules(@options[:grammar_file])
     @current_token = @token_head = 0
     @tokens = []
     if @options[:from_tokens]
