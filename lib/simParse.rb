@@ -32,6 +32,7 @@ class Node
     str << @text
     @contents.each{|c| str << tree_stringify(level+1)}
     str
+  end
   def orphan!
     @parent = nil
   end
