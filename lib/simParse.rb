@@ -38,6 +38,50 @@ class Node
   end
 end
 
+class Rule
+  attr_accessor :name, :productions
+  def initialize(ruletext)
+    ruletext.match( /\A(\w+)/ ) #TODO: Verify
+    @name = $1
+    @productions = []
+    create_productions
+  end
+  def create_productions
+    ruletext.match( /\A\w+\W+(.*)\z/m )
+    productiontext = $1
+    #then turn each production text into a data structure/analyzable rule
+  end
+end
+
+class GrammarGenerator
+  attr_accessor :filename, :filetext, :grammar
+  def initialize(filename)
+    @filename = filename
+    @filetext = File.load(@filename).read #read all of it
+    @grammar = {}
+    create_grammar
+  end
+  def create_grammar
+    set_start_symbol
+    create_rules
+  end
+  def set_start_symbol
+    @grammar[:start_symbol] = get_start_symbol
+  end
+  def get_start_symbol
+    @filetext.match( /start_symbol :(\w+)/ )
+    $1.to_sym
+  end
+  def create_rules
+    rules = [] #the set of all matches /rule.*?endrule/m in @filetext
+    rules.each{|rule| add_rule(rule)}
+  end
+  def add_rule(ruletext)
+    rule = Rule.new(ruletext)
+    @grammar[rule.name] = rule
+  end
+end
+
 class Parser
   attr_accessor :filename, :options, :grammar_rules
   attr_accessor :tree, :tokens, :current_token, :token_head
@@ -57,7 +101,8 @@ class Parser
     if @options[:stdout] || @options[:full] : emit_tree; end
   end
   def load_grammar_rules(filename)
-    GrammarLoader.new(filename)
+    g = GrammarLoader.new(filename)
+    g.grammar
   end
   def import_token_stream(filename)
     stream = []
