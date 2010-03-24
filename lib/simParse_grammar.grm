@@ -1,0 +1,119 @@
+grammar Pseudocal
+  start_symbol :Program
+  rule Program
+    "Program" id ";" [TypeDefinitions] [VariableDeclarations] [SubprogramDeclarations] CompoundStatement "."
+  endrule
+  rule TypeDefinitions
+    "type" TypeDefinition ";" (TypeDefinition ";")*
+  endrule
+  rule VariableDeclarations
+    "var" VariableDeclaration ";" (VariableDeclaration ";")*
+  endrule
+  rule SubprogramDeclarations
+    (ProcedureDeclaration ";" / FunctionDeclaration ";")*
+  endrule
+  rule TypeDefinition
+    id "=" Type
+  endrule
+  rule VariableDeclaration
+    IdentifierList ":" Type
+  endrule
+  rule ProcedureDeclaration
+    "Procedure" id "(" FormalParameterList ")" ";" ( Block / "forward" )
+  endrule
+  rule FunctionDeclaration
+    "function" id "(" FormalParameterList ")" ":" ResultType ";" ( Block / "forward" )
+  endrule
+  rule FormalParameterList
+    [IdentifierList ":" Type (";" IdentifierList ":" Type)*]
+  endrule
+  rule Block
+    [VariableDeclarations] CompoundStatement
+  endrule
+  rule CompoundStatement
+    "begin" Statement "end"
+  endrule
+  rule StatementSequence
+    [Statement (";" Statement)*]
+  endrule
+  rule Statement
+    SimpleStatement / StructuredStatement
+  endrule
+  rule SimpleStatement
+    [(AssignmentStatement / ProcedureStatement)]
+  endrule
+  rule AssignmentStatement 
+    Variable ":=" Expression
+  endrule
+  rule ProcedureStatement
+    id "(" ActualParameterList ")"
+  endrule
+  rule StructuredStatement
+    CompoundStatment
+    / "if" Expression "then" Statement ["else" Statement]
+    / "while" Expression "do" Statement
+    / "for" id ":=" Expression "to" Expression "do" Statement
+  endrule
+  rule Type
+    id / "array" "[" Constant ".." Constant "]" "of" Type / "record" FieldList "end"
+  endrule
+  rule ResultType
+    id
+  endrule
+  rule FieldList
+    [IdentifierList ":" Type (";" IdentifierList ":" Type)*]
+  endrule
+  rule Constant
+    [Sign] int
+  endrule
+  rule Expression
+    SimpleExpression [RelationalOp SimpleExpression]
+  endrule
+  rule RelationalOp
+    "=" / "<" / "<=" / ">" / ">=" / "<>" / "="
+  endrule
+  rule SimpleExpression
+    [Sign] Term (AddOp Term)*
+  endrule
+  rule AddOp
+    "+" / "-" / "or"
+  endrule
+  rule Term
+    Factor (MulOp Factor)*
+  endrule
+  rule MulOp
+    "*" / "div" / "mod" / "and"
+  endrule
+  rule Factor
+    int / string / Variable / FunctionReference / "not" Factor / "("Expression")"
+  endrule
+  rule FunctionReference
+    id "(" ActualParameterList ")"
+  endrule
+  rule Variable
+    id ComponentSelection
+  endrule
+  rule ComponentSelection
+    ["." id ComponentSelection / "[" Expression "]" ComponentSelection]
+  endrule
+  rule ActualParameterList
+    [Expression ("," Expression)*]
+  endrule
+  rule IdentifierList
+    id ("," id)*
+  endrule
+  rule Sign
+    "+" / "-"
+  endrule
+endgrammar
+#####
+#  rule id
+#    :type
+#  endrule
+#  rule int
+#    :type
+#  endrule
+#  rule string
+#    :type
+#  endrule
+# in the case of these three, grammar[:id|:int|:str] will be false, and thus you try Token.type instead of Token.value
