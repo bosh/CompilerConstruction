@@ -88,10 +88,10 @@ class Parser
     if @options[:stdout] : @tree.full_print; end
     if @options[:file]
       text = @tree.full_stringify
-      if @options[:overwrite] || !File.exists?(@filename){
+      if @options[:overwrite] || !File.exists?(@filename)
         File.new(@filename, "w")
-        File.open(@filename, 'a') {|f| f.write(text)
-      }
+        File.open(@filename, 'a') {|f| f.write(text)}
+      end
     end
   end
   def parse
