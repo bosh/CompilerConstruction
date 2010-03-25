@@ -87,14 +87,12 @@ class GrammarGenerator
 end
 
 class Parser
-  attr_accessor :filename, :options, :grammar_rules
-  attr_accessor :tree, :tokens, :current_token, :token_head
+  attr_accessor :filename, :options, :grammar_rules, :tree, :tokens
   def initialize(filename, opts = {})
     @options = opts
     @tree = nil
     @filename = filename
     load_grammar_rules(@options[:grammar_file])
-    @current_token = @token_head = 0
     @tokens = []
     if @options[:from_tokens]
       import_token_stream(@filename)
@@ -142,10 +140,11 @@ class Parser
       end
     end
   end
+  def start_symbol
+    @grammar_rules[:start_symbol]
+  end
   def parse
-    #the magic
-    #match(start_symbol)
-    @tree = root
+    @tree = match(start_symbol)
   end
 end
 
