@@ -121,8 +121,10 @@ class Production
     create_matcher($1, matcher_type)
   end
   def create_matcher(text, type)
-    if [:optional, :repeating, :group].include? type
+    if [:optional, :repeating].include? type
       Production.new(text, type) #should this be Rule.new?
+    elsif type == :group
+      Rule.new("anonymous", ("(" + text + ")")) #VERIFY THIS
     else
       Matcher.new(text, type)
     end
