@@ -71,10 +71,12 @@ class Production
 end
 
 class GrammarGenerator
-  attr_accessor :filename, :filetext, :grammar
+  attr_accessor :filename, :grammartext, :grammar, :name
   def initialize(filename)
     @filename = filename
-    @filetext = File.load(@filename).read #read all of it
+    File.load(@filename).read.match(/T(O)D(O)/m)
+    @name = $1
+    @grammartext = $2
     create_grammar
   end
   def create_grammar
@@ -86,15 +88,15 @@ class GrammarGenerator
     @grammar[:start_symbol] = get_start_symbol
   end
   def get_start_symbol
-    @filetext.match( /start_symbol :(\w+)/ )
+    @grammartext.match( /start_symbol :(\w+)/ )
     $1.to_sym
   end
   def create_rules
-    rules_in_text = @filetext.scan(/rule\s+(\w+)\s+(.*?)\s+endrule/m)
+    rules_in_text = @grammartext.scan(/rule\s+(\w+)\s+(.*?)\s+endrule/m)
     rules_in_text.each{|ruletext| add_rule(ruletext)}
   end
   def add_rule(ruletext)
-    rule = Rule.new(ruletext[0], ruletext[1]) #0 is the name
+    rule = Rule.new(ruletext[0], ruletext[1]) #0 is the name, 1 is text
     register_rule(rule)
   end
   def register_rule(rule)
