@@ -93,7 +93,7 @@ class Parser
     @options = opts
     @tree = nil
     @filename = filename
-    @grammar_rules = load_grammar_rules(@options[:grammar_file])
+    load_grammar_rules(@options[:grammar_file])
     @current_token = @token_head = 0
     @tokens = []
     if @options[:from_tokens]
@@ -105,8 +105,7 @@ class Parser
     if @options[:stdout] || @options[:full] : emit_tree; end
   end
   def load_grammar_rules(filename)
-    g = GrammarLoader.new(filename)
-    g.grammar
+    @grammar_rules = GrammarLoader.new(filename).grammar
   end
   def import_token_stream(filename)
     stream = []
