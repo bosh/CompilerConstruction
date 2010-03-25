@@ -42,7 +42,7 @@ class Rule
   attr_accessor :name, :productions
   def initialize(name, text)
     @name = name
-    @text = text
+    @text = text.strip
     @productions = []
     create_productions
   end
@@ -51,6 +51,19 @@ class Rule
     top_level_productions.each do |production|
       @productions << Production.new(production)
     end
+  end
+end
+
+class Production
+  attr_accessor :text, :subproductions, :type
+  def initialize(text)
+    @text = text.strip
+    set_type
+    @subproductions = []
+    create
+  end
+  def set_type
+    
   end
 end
 
