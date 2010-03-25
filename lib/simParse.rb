@@ -106,19 +106,19 @@ class Production
       matcher_type = :type
     elsif @text =~ /\A([A-Z]\w*)/
       matcher_type = :metasymbol
-    elsif @text =~ /\A\[(.*)\]/
+    elsif @text =~ /\A\[(.*?)\]/
       matcher_type = :optional
       extra_chars = 2
-    elsif @text =~ /\A\{(.*)\}/
+    elsif @text =~ /\A\{(.*?)\}/
       matcher_type = :repeating
       extra_chars = 2
-    elsif @text =~ /\A\((.*)\)/
+    elsif @text =~ /\A\((.*?)\)/
       matcher_type = :group
       extra_chars = 2
     else
       #should not be here =)
     end
-    #puts $1
+    puts $1
     @text = @text[($1.length+extra_chars)..-1].strip
     create_matcher($1, matcher_type)
   end
