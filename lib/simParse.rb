@@ -47,8 +47,8 @@ class Rule
   end
   def create_productions
     @productions = []
-    if ( /\A\((.*)\)\z/ =~ @text) #that means it's wrapped in ()s
-      @text = @text[1...-1] #Kill the parens
+    if ( /\A\((.*)\)\z/ =~ @text) #that means it's wrapped in ()s, ie has top level productions
+      @text = @text[1...-1].strip #Kill the parens
       @text.gsub!("/", "//") #Means there can be no /'s in a rule with multiple productions
       top_level_productions = @text.scan( /(\A|\/)(.*?)(\z|\/)/m )
       top_level_productions.each do |production|
