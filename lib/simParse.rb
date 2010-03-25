@@ -97,34 +97,27 @@ class Production
   end
   def grab_next_metasymbol #this is an easy factor (the $1s)
     matcher_type = nil
-    extra_chars = 0 #becomes 2 if you're wrapping something but not passing the wrap
     if @text =~ /\A"(.*?)"/
       matcher_type = :literal
-      extra_chars = 2
     elsif @text =~ /\A([a-z]\w*)/
       matcher_type = :type
     elsif @text =~ /\A([A-Z]\w*)/
       matcher_type = :metasymbol
-    elsif @text =~ /\A\[(.*?)\]/
+    elsif @text =~ /\A(\[.*?\])/
       matcher_type = :optional
-      extra_chars = 2
-    elsif @text =~ /\A\{(.*?)\}/
+    elsif @text =~ /\A(\{.*?\})/
       matcher_type = :repeating
-      extra_chars = 2
-    elsif @text =~ /\A\((.*?)\)/
+    elsif @text =~ /\A(\(.*?\))/
       matcher_type = :group
-      extra_chars = 2
     else
       #should not be here =)
     end
-    @text = @text[($1.length+extra_chars)..-1].strip
+    @text = @text[($1.length+(matcher_type == :literal ? 2 : 0 ))..-1].strip
     create_matcher($1, matcher_type)
   end
   def create_matcher(text, type)
-    if [:optional, :repeating].include? type
-      Production.new(text, type) #should this be Rule.new?
-    elsif type == :group
-      Rule.new("anonymous", ("(" + text + ")")) #VERIFY THIS
+    if [:optional, :repeating, :group].include? type
+      Rule.new("anonymous", text) #now with infinite recursion awesomeness
     else
       Matcher.new(text, type)
     end
