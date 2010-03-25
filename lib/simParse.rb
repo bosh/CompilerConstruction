@@ -74,7 +74,7 @@ class GrammarGenerator
   attr_accessor :filename, :grammartext, :grammar, :name
   def initialize(filename)
     @filename = filename
-    File.load(@filename).read.match(/T(O)D(O)/m)
+    File.load(@filename).read.match(/grammar\s+(\w+)\s+(.*?)endgrammar/m)
     @name = $1
     @grammartext = $2
     create_grammar
