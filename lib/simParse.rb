@@ -70,7 +70,7 @@ class Production
   end
   def set_type
     if @text =~ /\A\(.*\)\z/ #wrapped in ()s
-      @type = :group
+      @type = :group #i think this should never actually occur
     elsif @text =~ /\A\{.*\}\z/ #wrapped in {}
       @type = :repeating
     elsif @text =~ /\A\[.*\]\z/ #wrapped in []s
@@ -89,6 +89,31 @@ class Production
   def create_subproductions
     @subproductions = []
     TODO
+  end
+  def grab_next_metasymbol #this is an easy factor (the $1s)
+    matcher_type = nil
+    extra_chars = 0 #becomes 2 if you're wrapping something but not passing the wrap
+    if @text =~ /\A"(.*?)"/
+      matcher_type = :literal
+      extra_chars = 2
+    elsif @text =~ /\A([a-z]\w*)/
+      matcher_type = :type
+    elsif @text =~ /\A([A-Z]\w*)/
+      matcher_type = :metasymbol
+    elsif @text =~ /\A\[(.*)\]/
+      matcher_type = :optional
+      extra_chars = 2
+    elsif @text =~ /\A\{(.*)\}/
+      matcher_type = :repeating
+      extra_chars = 2
+    elsif @text =~ /\A\((.*)\)/
+      matcher_type = :group
+      extra_chars = 2
+    else
+      #should not be here =)
+    end
+    @text = @text[($1.length+extra_chars)..-1].strip
+    create_matcher($1, matcher_type)
   end
 end
 
