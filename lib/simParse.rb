@@ -1,4 +1,4 @@
-require "simpLex.rb"
+require 'simpLex'
 
 class Tree
   attr_accessor :root
@@ -69,7 +69,7 @@ class Production
   def initialize(text, type = "")
     @text = text.strip
     @type = type
-    set_type unless !type.empty?
+    set_type unless type
     create_subproductions
   end
   def set_type
@@ -118,6 +118,7 @@ class Production
     else
       #should not be here =)
     end
+    #puts $1
     @text = @text[($1.length+extra_chars)..-1].strip
     create_matcher($1, matcher_type)
   end
@@ -153,7 +154,7 @@ class GrammarGenerator
   attr_accessor :filename, :grammartext, :grammar, :name
   def initialize(filename)
     @filename = filename
-    File.load(@filename).read.match(/grammar\s+(\w+)\s+(.*?)endgrammar/m)
+    File.open(@filename).read.match(/grammar\s+(\w+)\s+(.*?)endgrammar/m)
     @name = $1
     @grammartext = $2
     create_grammar
@@ -198,7 +199,7 @@ class Parser
     if @options[:stdout] || @options[:full] : emit_tree; end
   end
   def load_grammar_rules(filename)
-    @grammar_rules = GrammarLoader.new(filename).grammar
+    @grammar_rules = GrammarGenerator.new(filename).grammar
   end
   def import_token_stream(filename)
     @tokens = []
