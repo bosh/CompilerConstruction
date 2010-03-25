@@ -3,15 +3,13 @@ require 'simpLex'
 class Tree
   attr_accessor :root
   def initialize(node)
-    @root = node #would be great to make this non-destructive via full copying of data, but that doesn't matter for a one-shot
+    @root = node  #would be great to make this non-destructive via full copying of data, but that doesn't matter for a one-shot
     @root.orphan! #technically unnecessary
   end
-  def full_print
-    @root.tree_print
-  end
-  def full_stringify
-    @root.tree_stringify
-  end
+  
+  def full_print; @root.tree_print          end
+  def full_stringify; @root.tree_stringify  end
+  
 end
 
 class Node
@@ -33,9 +31,9 @@ class Node
     @contents.each{|c| str << tree_stringify(level+1)}
     str
   end
-  def orphan!
-    @parent = nil
-  end
+  
+  def orphan!; @parent = nil end
+  
 end
 
 class Rule
@@ -72,43 +70,30 @@ class Production
     create_subproductions
   end
   def set_type
-    if @text =~ /\A\(.*\)\z/ #wrapped in ()s
-      @type = :group #i think this should never actually occur
-    elsif @text =~ /\A\{.*\}\z/ #wrapped in {}
-      @type = :repeating
-    elsif @text =~ /\A\[.*\]\z/ #wrapped in []s
-      @type = :optional
+    if @text =~       /\A\(.*\)\z/ : @type = :group
+      elsif @text =~  /\A\{.*\}\z/ : @type = :repeating
+      elsif @text =~  /\A\[.*\]\z/ : @type = :optional
     else
       @type = :basic
     end
     if wrapped?; unwrap! end
   end
-  def wrapped?
-    [:optional, :repeating, :group].include? @type
-  end
-  def unwrap!
-    @text = @text[1...-1].strip
-  end
+  
+  def wrapped?; [:optional, :repeating, :group].include? @type end
+  def unwrap!; @text = @text[1...-1].strip end
+  
   def create_subproductions
     @subproductions = []
-    while !@text.empty?
-      @subproductions << grab_next_metasymbol
-    end
+    until @text.empty? : @subproductions << grab_next_metasymbol end
   end
   def grab_next_metasymbol #this is an easy factor (the $1s)
     matcher_type = nil
-    if @text =~ /\A"(.*?)"/
-      matcher_type = :literal
-    elsif @text =~ /\A([a-z]\w*)/
-      matcher_type = :type
-    elsif @text =~ /\A([A-Z]\w*)/
-      matcher_type = :metasymbol
-    elsif @text =~ /\A(\[.*?\])/
-      matcher_type = :optional
-    elsif @text =~ /\A(\{.*?\})/
-      matcher_type = :repeating
-    elsif @text =~ /\A(\(.*?\))/
-      matcher_type = :group
+    if @text =~       /\A"(.*?)"/     : matcher_type = :literal
+      elsif @text =~  /\A([a-z]\w*)/  : matcher_type = :type
+      elsif @text =~  /\A([A-Z]\w*)/  : matcher_type = :metasymbol
+      elsif @text =~  /\A(\[.*?\])/   : matcher_type = :optional
+      elsif @text =~  /\A(\{.*?\})/   : matcher_type = :repeating
+      elsif @text =~  /\A(\(.*?\))/   : matcher_type = :group
     else
       #should not be here =)
     end
@@ -131,12 +116,9 @@ class Matcher
     @type = type
   end
   def match?(token)
-    if @type == "literal"
-      @text == token.value
-    elsif @type == "type"
-      @text == token.type
-    elsif @type == "metasymbol"
-      $parser.grammar_rules[text.to_sym].match?(token)
+    if @type == "literal"         : @text == token.value
+      elsif @type == "type"       : @text == token.type
+      elsif @type == "metasymbol" : $parser.grammar_rules[text.to_sym].match?(token)
     else
       #should never be here =)
     end
@@ -157,24 +139,16 @@ class GrammarGenerator
     set_start_symbol
     create_rules
   end
-  def set_start_symbol
-    @grammar[:start_symbol] = get_start_symbol
-  end
   def get_start_symbol
     @grammartext.match( /start_symbol :(\w+)/ )
     $1.to_sym
   end
-  def create_rules
-    rules_in_text = @grammartext.scan(/rule\s+(\w+)\s+(.*?)\s+endrule/m)
-    rules_in_text.each{|ruletext| add_rule(ruletext)}
-  end
-  def add_rule(ruletext)
-    rule = Rule.new(ruletext[0], ruletext[1]) #0 is the name, 1 is text
-    register_rule(rule)
-  end
-  def register_rule(rule)
-    @grammar[rule.name] = rule
-  end
+  
+  def set_start_symbol; @grammar[:start_symbol] = get_start_symbol end
+  def create_rules; @grammartext.scan(/rule\s+(\w+)\s+(.*?)\s+endrule/m).each{|ruletext| add_rule(ruletext)} end
+  def add_rule(ruletext); register_rule(Rule.new(ruletext[0], ruletext[1])) end
+  def register_rule(rule); @grammar[rule.name] = rule end
+  
 end
 
 class Parser
@@ -261,11 +235,11 @@ if $0 == __FILE__
     filename = ARGV.delete_at(0)
     ARGV.each do |arg|
       case arg
-        when "-n" : opts[:full]      = false
-        when "-a" : opts[:full]       = true
-        when "-o" : opts[:overwrite]  = true
-        when "-s" : opts[:stdout]     = opts[:full] = true
-        when "-f" : opts[:file]     = opts[:full] = true
+        when "-n" : opts[:full]         = false
+        when "-a" : opts[:full]         = true
+        when "-o" : opts[:overwrite]    = true
+        when "-s" : opts[:stdout]       = opts[:full] = true
+        when "-f" : opts[:file]         = opts[:full] = true
         when "-g" : opts[:grammar_file] = filename#.drop_extension.add__grammar.grm #BROKEN FOR NOW
       else
         puts "Unrecognized option: '#{arg}'. Attempting run anyway."
