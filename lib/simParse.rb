@@ -39,7 +39,7 @@ class Node
 end
 
 class Rule
-  attr_accessor :name, :productions
+  attr_accessor :name, :text, :productions
   def initialize(name, text)
     @name = name.strip
     @text = text.strip
@@ -47,9 +47,16 @@ class Rule
   end
   def create_productions
     @productions = []
-    top_level_productions = TODO
-    top_level_productions.each do |production|
-      @productions << Production.new(production)
+    if ( /\A\((.*)\)\z/ =~ @text) #that means it's wrapped in ()s
+      @text = @text[1...-1] #Kill the parens
+      @text.gsub!("/", "//") #Means there can be no /'s in a rule with multiple productions
+      top_level_productions = @text.scan( /(\A|\/)(.*?)(\z|\/)/m )
+      top_level_productions.each do |production|
+        @productions << Production.new(production[1])
+      end
+    else
+      #there's only one top level rule
+      @productions << Production.new(@text)
     end
   end
 end
@@ -62,7 +69,22 @@ class Production
     create_subproductions
   end
   def set_type
-    @type = TODO
+    if @text =~ /\A\(.*\)\z/ #wrapped in ()s
+      @type = :group
+    elsif @text =~ /\A\{.*\}\z/ #wrapped in {}
+      @type = :repeating
+    elsif @text =~ /\A\[.*\]\z/ #wrapped in []s
+      @type = :optional
+    else
+      @type = :basic
+    end
+    if wrapped?; unwrap! end
+  end
+  def wrapped?
+    [:optional, :repeating, :group].include? @type
+  end
+  def unwrap!
+    @text = @text[1...-1].strip
   end
   def create_subproductions
     @subproductions = []
