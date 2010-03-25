@@ -48,8 +48,8 @@ class Rule
   end
   def create_productions
     top_level_productions = TODO
-    top_level_productions.each do |subproduction|
-      @productions << Production.new(subproduction)
+    top_level_productions.each do |production|
+      @productions << Production.new(production)
     end
   end
 end
@@ -144,11 +144,10 @@ class Parser
     @grammar_rules[:start_symbol]
   end
   def parse
-    @tree = match(start_symbol)
+    @tree = Tree.new(match(start_symbol))
   end
 end
 
-$start_symbol = "Program"
 if $0 == __FILE__
   if ARGV.size == 0 || ARGV[0] == "-h" || ARGV[0] == "help"
     puts "Welcome to simParse,
