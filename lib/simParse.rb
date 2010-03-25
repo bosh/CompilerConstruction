@@ -54,8 +54,7 @@ class Rule
       top_level_productions.each do |production|
         @productions << Production.new(production[1])
       end
-    else
-      #there's only one top level rule
+    else #there's only one top level rule
       @productions << Production.new(@text)
     end
   end
@@ -118,7 +117,6 @@ class Production
     else
       #should not be here =)
     end
-    puts $1
     @text = @text[($1.length+extra_chars)..-1].strip
     create_matcher($1, matcher_type)
   end
