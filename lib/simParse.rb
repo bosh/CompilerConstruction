@@ -63,9 +63,10 @@ end
 
 class Production
   attr_accessor :text, :subproductions, :type
-  def initialize(text)
+  def initialize(text, type = "")
     @text = text.strip
-    set_type
+    @type = type
+    set_type unless !type.empty?
     create_subproductions
   end
   def set_type
@@ -88,7 +89,9 @@ class Production
   end
   def create_subproductions
     @subproductions = []
-    TODO
+    while !@text.empty?
+      @subproductions << grab_next_metasymbol
+    end
   end
   def grab_next_metasymbol #this is an easy factor (the $1s)
     matcher_type = nil
@@ -115,6 +118,17 @@ class Production
     @text = @text[($1.length+extra_chars)..-1].strip
     create_matcher($1, matcher_type)
   end
+  def create_matcher(text, type)
+    if [:optional, :repeating, :group].include? type
+      Production.new(text, type) #should this be Rule.new?
+    else
+      Matcher.new(text, type)
+    end
+  end
+end
+
+class Matcher
+  TODO
 end
 
 class GrammarGenerator
