@@ -40,16 +40,17 @@ end
 
 class Rule
   attr_accessor :name, :productions
-  def initialize(ruletext)
-    ruletext.match( /\A(\w+)/ ) #TODO: Verify
-    @name = $1
+  def initialize(name, text)
+    @name = name
+    @text = text
     @productions = []
     create_productions
   end
   def create_productions
-    ruletext.match( /\A\w+\W+(.*)\z/m )
-    productiontext = $1
-    #then turn each production text into a data structure/analyzable rule
+    top_level_productions = TODO
+    top_level_productions.each do |subproduction|
+      @productions << Production.new(subproduction)
+    end
   end
 end
 
@@ -73,11 +74,14 @@ class GrammarGenerator
     $1.to_sym
   end
   def create_rules
-    rules = [] #the set of all matches /rule.*?endrule/m in @filetext
-    rules.each{|rule| add_rule(rule)}
+    rules_in_text = @filetext.scan(/rule\s+(\w+)\s+(.*?)\s+endrule/m)
+    rules_in_text.each{|ruletext| add_rule(ruletext)}
   end
   def add_rule(ruletext)
-    rule = Rule.new(ruletext)
+    rule = Rule.new(ruletext[0], ruletext[1]) #0 is the name
+    register_rule(rule)
+  end
+  def register_rule(rule)
     @grammar[rule.name] = rule
   end
 end
