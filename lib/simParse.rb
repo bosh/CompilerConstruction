@@ -41,12 +41,12 @@ end
 class Rule
   attr_accessor :name, :productions
   def initialize(name, text)
-    @name = name
+    @name = name.strip
     @text = text.strip
-    @productions = []
     create_productions
   end
   def create_productions
+    @productions = []
     top_level_productions = TODO
     top_level_productions.each do |production|
       @productions << Production.new(production)
@@ -59,11 +59,14 @@ class Production
   def initialize(text)
     @text = text.strip
     set_type
-    @subproductions = []
-    create
+    create_subproductions
   end
   def set_type
-    
+    @type = TODO
+  end
+  def create_subproductions
+    @subproductions = []
+    TODO
   end
 end
 
@@ -72,10 +75,10 @@ class GrammarGenerator
   def initialize(filename)
     @filename = filename
     @filetext = File.load(@filename).read #read all of it
-    @grammar = {}
     create_grammar
   end
   def create_grammar
+    @grammar = {}
     set_start_symbol
     create_rules
   end
@@ -103,10 +106,8 @@ class Parser
   attr_accessor :filename, :options, :grammar_rules, :tree, :tokens
   def initialize(filename, opts = {})
     @options = opts
-    @tree = nil
     @filename = filename
     load_grammar_rules(@options[:grammar_file])
-    @tokens = []
     if @options[:from_tokens]
       import_token_stream(@filename)
     else
@@ -119,7 +120,7 @@ class Parser
     @grammar_rules = GrammarLoader.new(filename).grammar
   end
   def import_token_stream(filename)
-    stream = []
+    @tokens = []
     File.open(filename) do |f|
       lines = f.readlines
       i = 0
@@ -135,13 +136,13 @@ class Parser
           value = value[1...-1] #get rid of starting quote and last char (\n, the " will be handled below)
         end
         value = value[1...-1] #get rid of first and last char (" " and then \n normally, " if went through the if/while)
-        stream << Token.new("",type, value) #oh look, token needs a factoring
+        @tokens << Token.new("",type, value) #oh look, token needs a factoring
         i += 1
       end
     end
   end
   def lexer_token_stream(filename)
-    lex = Lexer.new(filename, {:internal => true, :full => true})
+    @tokens = Lexer.new(filename, {:internal => true, :full => true}).token_list
   end
   def emit_tree
     if @options[:stdout] : @tree.full_print; end
@@ -156,8 +157,17 @@ class Parser
   def start_symbol
     @grammar_rules[:start_symbol]
   end
+  def match(symbol)
+    TODO
+  end
   def parse
-    @tree = Tree.new(match(start_symbol))
+    result = match(start_symbol)
+    #if result.error?
+    #  puts result.message
+    #  exit(0)
+    #else
+      @tree = Tree.new(result)
+    #end
   end
 end
 
