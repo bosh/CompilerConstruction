@@ -258,7 +258,7 @@ if $0 == __FILE__
 \t\t[-a|-n]\t- Full run OR no run. No run is default\n"
   else
     opts = {}
-    filename = ARGV[0]
+    filename = ARGV.delete_at(0)
     ARGV.each do |arg|
       case arg
         when "-n" : opts[:full]      = false
@@ -272,6 +272,6 @@ if $0 == __FILE__
       end
     end
     opts[:grammar_file] ||= "simParse_grammar.grm"
-    parser = Parser.new(ARGV[0], opts)
+    parser = Parser.new(filename, opts)
   end
 end
