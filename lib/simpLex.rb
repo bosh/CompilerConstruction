@@ -178,8 +178,7 @@ Usage:\n\t$ruby simpLex filename [opts]\nOptions:
     opts = {}
     ARGV[0].match(/\A(.*)\..*\z/)
     opts[:target] = "#{$1}_lex.txt"
-    opts[:source] = ARGV[0]
-    args = ARGV.delete_at 0 #remove the program file from the arguments
+    opts[:source] = ARGV.delete_at 0
     ARGV.each do |arg|
       case arg
         when "-d" : opts[:dirty]      = true
