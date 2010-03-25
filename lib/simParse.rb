@@ -59,6 +59,9 @@ class Rule
       @productions << Production.new(@text)
     end
   end
+  def match?
+    TODO
+  end
 end
 
 class Production
@@ -128,7 +131,22 @@ class Production
 end
 
 class Matcher
-  TODO
+  attr_accessor :text, :type
+  def initialize(text, type)
+    @text = text
+    @type = type
+  end
+  def match?(token)
+    if @type == "literal"
+      @text == token.value
+    elsif @type == "type"
+      @text == token.type
+    elsif @type == "metasymbol"
+      $parser.grammar_rules[text.to_sym].match?(token)
+    else
+      #should never be here =)
+    end
+  end
 end
 
 class GrammarGenerator
