@@ -50,7 +50,7 @@ grammar Pseudocal
     id "(" ActualParameterList ")"
   endrule
   rule StructuredStatement
-    (MatchedStatement / OpenStatement)
+    (MatchedStatement | OpenStatement)
   endrule
   rule MatchedStatement
     ("if" Expression "then" MatchedStatement "else" MatchedStatement
