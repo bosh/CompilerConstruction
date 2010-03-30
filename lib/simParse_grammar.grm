@@ -50,10 +50,20 @@ grammar Pseudocal
     id "(" ActualParameterList ")"
   endrule
   rule StructuredStatement
-    (CompoundStatement
-    / "if" Expression "then" Statement ["else" Statement]
-    / "while" Expression "do" Statement
-    / "for" id ":=" Expression "to" Expression "do" Statement
+    (MatchedStatement | OpenStatement)
+  endrule
+  rule MatchedStatement
+    ("if" Expression "then" MatchedStatement "else" MatchedStatement
+    / CompoundStatement
+    / "while" Expression "do" MatchedStatement
+    / "for" id ":=" Expression "to" Expression "do" MatchedStatement
+    )
+  endrule
+  rule OpenStatement
+    ("if" Expression "then" Statement
+    / "if" Expression "then" MatchedStatement "else" OpenStatement
+    / "while" Expression "do" OpenStatement
+    / "for" id ":=" Expression "to" Expression "do" OpenStatement
     )
   endrule
   rule Type
