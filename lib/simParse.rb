@@ -46,6 +46,11 @@ class Rule
     @text = text.strip
     create_productions
   end
+  def to_s #more like to_delete (TODO)
+    txt = "Rule: #{@name}: #{@text}\n"
+    @productions.each{|p| txt << p.to_s; txt << "\n"}
+    txt
+  end
   def create_productions
     @productions = []
     if ( /\A\((.*)\)\z/m =~ @text) #that means it's wrapped in ()s, ie has top level productions
@@ -93,6 +98,11 @@ class Production
     @type = type
     set_type!
     create_subproductions
+  end
+  def to_s
+    txt = "--Production: #{@text}"
+    @subproductions.each{|s| txt <<"\n\tSP:"; txt << s.to_s}
+    txt
   end
   def set_type!
     if @text =~  /\A\{.*\}\z/ : @type = :repeating
@@ -158,6 +168,9 @@ class Matcher
     @text = text
     @type = type
   end
+  def to_s
+    "\t--Matcher: #{@text}#{@type}"
+  end
   def match?(token)
     if @type == "literal"         : @text == token.value
       elsif @type == "type"       : @text == token.type
@@ -210,6 +223,13 @@ class Parser
     end
     if @options[:full] : parse; end
     if @options[:stdout] || @options[:full] : emit_tree; end
+    print_grammar #TODO delete me
+  end
+  def print_grammar
+    @grammar_rules.each do |r|
+      puts r.to_s
+    end
+    puts "Starts with: #{@grammar_rules[:start_symbol]}"
   end
   def load_grammar_rules(filename)
     @grammar_rules = GrammarGenerator.new(filename).grammar
