@@ -47,7 +47,7 @@ class Rule
     create_productions
   end
   def to_s #more like to_delete (TODO)
-    txt = "Rule: #{@name}:\nText: ~#{@text}~\n"
+    txt = "\nRule: #{@name}:\nText: ~#{@text}~\n"
     @productions.each{|p| txt << p.to_s; txt << "\n"}
     txt
   end
@@ -100,7 +100,7 @@ class Production
     create_subproductions
   end
   def to_s
-    txt = "--Production: #{@text}"
+    txt = "--Production: #{@type}"
     @subproductions.each{|s| txt <<"\n\tSP:"; txt << s.to_s}
     txt
   end
@@ -169,7 +169,7 @@ class Matcher
     @type = type
   end
   def to_s
-    "\t--Matcher: #{@text}#{@type}"
+    "\t--Matcher: #{@text}\t#{@type}"
   end
   def match?(token)
     if @type == "literal"         : @text == token.value
