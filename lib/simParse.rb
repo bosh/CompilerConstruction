@@ -1,4 +1,7 @@
 require 'simpLex'
+#Defines two globals used to track the whole stream and location within it
+$input_token_stream = []
+$stream_location = 0
 
 class Tree
   attr_accessor :root
@@ -45,7 +48,7 @@ class Rule
   end
   def create_productions
     @productions = []
-    if ( /\A\((.*)\)\z/ =~ @text) #that means it's wrapped in ()s, ie has top level productions
+    if ( /\A\((.*)\)\z/m =~ @text) #that means it's wrapped in ()s, ie has top level productions
       @text = @text[1...-1].strip #Kill the parens
       @text.gsub!("/", "//") #Means there can be no /'s in a rule with multiple productions
       top_level_productions = @text.scan( /(\A|\/)(.*?)(\z|\/)/m )
@@ -85,15 +88,14 @@ end
 
 class Production
   attr_accessor :text, :subproductions, :type
-  def initialize(text, type = "")
+  def initialize(text)
     @text = text.strip
     @type = type
-    set_type unless type
+    set_type!
     create_subproductions
   end
-  def set_type
-    if @text =~       /\A\(.*\)\z/ : @type = :group
-      elsif @text =~  /\A\{.*\}\z/ : @type = :repeating
+  def set_type!
+    if @text =~  /\A\{.*\}\z/ : @type = :repeating
       elsif @text =~  /\A\[.*\]\z/ : @type = :optional
     else
       @type = :basic
@@ -109,9 +111,9 @@ class Production
   
   def create_subproductions
     @subproductions = []
-    until @text.empty? : @subproductions << grab_next_metasymbol end
+    until @text.empty? : @subproductions << matchmake_next_metasymbol end
   end
-  def grab_next_metasymbol #this is an easy factor (the $1s)
+  def matchmake_next_metasymbol #this is an easy factor (the $1s)
     matcher_type = nil
     if @text =~       /\A"(.*?)"/     : matcher_type = :literal
       elsif @text =~  /\A([a-z]\w*)/  : matcher_type = :type
@@ -120,7 +122,7 @@ class Production
       elsif @text =~  /\A(\{.*?\})/   : matcher_type = :repeating
       elsif @text =~  /\A(\(.*?\))/   : matcher_type = :group
     else
-      #should not be here =)
+      puts "FATAL ERROR: #{matcher_type}||#{@text}"
     end
     @text = @text[($1.length+(matcher_type == :literal ? 2 : 0 ))..-1].strip
     create_matcher($1, matcher_type)
@@ -144,7 +146,7 @@ class Production
       matches << match #if everything is peachy, anyway
     end
     #then return true or false based on the whole subproductions list.
-    #this should never have a choice to make.
+    #this should probably never have a choice to make.
     #it just matches every member and gets a matcher out of them. some may return deadmatchers,
     #but if they didn't return some custom FATAL matcher
   end
