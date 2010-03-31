@@ -57,6 +57,18 @@ class Rule
     end
   end
   def match?
+    @productions.each do |p|
+      matcher = if p.required? #probably factorable or movable into another class...
+        p.match?() #no extra params
+      elsif p.optional?
+        p.match?() #TODO note optionality
+      elsif p.repeating?
+        p.match?() #TODO note repeated checking
+      end
+      handle_matcher(matcher)
+    end
+  end
+  def handle_matcher(matcher)
     TODO
   end
 end
