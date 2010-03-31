@@ -163,7 +163,7 @@ end
 
 #Following bit run only when not being used as a require from somewhere else
 if $0 == __FILE__
-  if ARGV.size == 0 || ARGV[0] == "-h" || ARGV[0] == "--help"
+  if ARGV.size == 0 || ARGV.include?("-h") || ARGV.include?("--help")
     puts "Welcome to simpLex,
 \ta simple Ruby lexical analyzer for a basic Pascal grammar.
 Usage:\n\t$ruby simpLex filename [opts]\nOptions:

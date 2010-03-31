@@ -229,7 +229,7 @@ class Parser
     @grammar_rules.each do |r|
       puts r.to_s
     end
-    puts "Starts with: #{@grammar_rules[:start_symbol]}"
+    puts "Start Symbol: #{@grammar_rules[:start_symbol]}"
   end
   def load_grammar_rules(filename)
     @grammar_rules = GrammarGenerator.new(filename).grammar
@@ -287,15 +287,16 @@ class Parser
 end
 
 if $0 == __FILE__
-  if ARGV.size == 0 || ARGV[0] == "-h" || ARGV[0] == "help"
+  if ARGV.size == 0 || ARGV.include?("-h") || ARGV.include?("help")
     puts "Welcome to simParse,
 \ta simple parser for a pascal-variant grammar
 \nsimParse works together with simpLex to analyze and parse your programs.
-\n\tTo use:\n\t\truby simParse _filename_ [options]
-\n\tOptions:
-\t\t[-s|-f]\t- Stdout OR fileout. File out will be _filename_parsed.txt
-\t\t-o\t\t- If mode -f, will overwrite any file with the same target name
-\t\t[-a|-n]\t- Full run OR no run. No run is default\n"
+\nTo use:\n\truby simParse _filename_ [options]
+\nOptions:
+\t[-s|-f]\t- Stdout OR fileout. File out will be _filename_parsed.txt
+\t-o\t- If mode -f, will overwrite any file with the same target name
+\t[-a|-n]\t- Full run OR no run. No run is default\n
+\t\t(BONUS! -d - Print grammar constructs to the command line...)"
   else
     opts = {}
     filename = ARGV.delete_at(0)
