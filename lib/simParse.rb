@@ -1,7 +1,5 @@
 require 'simpLex'
-#Defines two globals used to track the whole stream and location within it
-$input_token_stream = []
-$stream_location = 0
+$current_index = 0
 
 class Tree
   attr_accessor :root
@@ -46,7 +44,7 @@ class Rule
     @text = text.strip
     create_productions
   end
-  def to_s #more like to_delete (TODO)
+  def to_s
     txt = "\nRule: #{@name}:\nText: ~#{@text}~\n"
     @productions.each{|p| txt << p.to_s; txt << "\n"}
     txt
@@ -64,14 +62,14 @@ class Rule
       @productions << Production.new(@text)
     end
   end
-  def match?()
+  def match?(tokenstream)
     @productions.each do |p|
       matcher = if p.required? #probably factorable or movable into another class...
-        p.match?() #no extra params
+        p.match?(tokenstream) #no extra params
       elsif p.optional?
-        p.match?() #TODO note optionality
+        p.match?(tokenstream) #TODO note optionality
       elsif p.repeating?
-        p.match?() #TODO note repeated checking
+        p.match?(tokenstream) #TODO note repeated checking
       end
       handle_matcher(matcher) #may have to be inlined here just to possibly break
     end
@@ -115,8 +113,8 @@ class Production
   
   def wrapped?; [:optional, :repeating, :group].include? @type end
   def unwrap!; @text = @text[1...-1].strip end
-  def required?; @type != :repeating && @type != :optional end #TODO needs verify
-  def optional?; @type == :optional end #TODO check that repeating is a false here
+  def required?; @type != :repeating && @type != :optional end
+  def optional?; @type == :optional end
   def repeating?; @type == :repeating end
   
   def create_subproductions
@@ -144,10 +142,10 @@ class Production
       Matcher.new(text, type)
     end
   end
-  def match?() #will take params
+  def match?(tokenstream) #will take params
     matches = []
     @subproductions.each do |s|
-      match = s.match?() #params of parent? the s's should handle it themselves i think
+      match = s.match?(tokenstream) #params of parent? the s's should handle it themselves i think
       #TODO: apply match to array only if required to
       #TODO: execute a reloop through current, with new params somehow (globals i guess)
       #^= if in a repeater where the most recent result was nonempty and valid
@@ -171,12 +169,14 @@ class Matcher
   def to_s
     "\t--Matcher: #{@text}\t#{@type}"
   end
-  def match?(token)
+  def match?(tokenstream)
+    token = tokenstream[$current_index]
     if @type == "literal"         : @text == token.value
       elsif @type == "type"       : @text == token.type
       elsif @type == "metasymbol" : $parser.grammar_rules[text.to_sym].match?(token)
     else
-      #should never be here =)
+      #all types should be accounted for
+      puts "FATAL ERROR"
     end
   end
 
@@ -273,7 +273,8 @@ class Parser
     @grammar_rules[:start_symbol]
   end
   def match?(symbol)
-    @grammar_rules[start_symbol].match?() #TODO decide whether to notify that this is the top level
+    $current_index = 0
+    @grammar_rules[start_symbol].match?(@tokens)
   end
   def parse
     result = match?(start_symbol)
