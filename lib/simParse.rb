@@ -56,7 +56,7 @@ class Rule
       @productions << Production.new(@text)
     end
   end
-  def match?
+  def match?()
     @productions.each do |p|
       matcher = if p.required? #probably factorable or movable into another class...
         p.match?() #no extra params
@@ -67,6 +67,8 @@ class Rule
       end
       handle_matcher(matcher) #may have to be inlined here just to possibly break
     end
+    #THIS MUST RETURN A NODE HERE
+    #if error then return Node.new(parent? oh boy, "ERROR") #could probably be more descriptive
   end
   def handle_matcher(matcher)
     if required? && matcher.valid?
@@ -210,7 +212,7 @@ class Parser
   def load_grammar_rules(filename)
     @grammar_rules = GrammarGenerator.new(filename).grammar
   end
-  def import_token_stream(filename)
+  def import_token_stream(filename) #This is fucking terrible. I'm sorry!
     @tokens = []
     File.open(filename) do |f|
       lines = f.readlines
@@ -248,17 +250,17 @@ class Parser
   def start_symbol
     @grammar_rules[:start_symbol]
   end
-  def match(symbol)
-    TODO
+  def match?(symbol)
+    @grammar_rules[start_symbol].match?() #TODO decide whether to notify that this is the top level
   end
   def parse
-    result = match(start_symbol)
-    #if result.error?
-    #  puts result.message
-    #  exit(0)
-    #else
+    result = match?(start_symbol)
+    if result.text =~ /\AERROR:/
+      puts result.text
+      exit(0)
+    else
       @tree = Tree.new(result)
-    #end
+    end
   end
 end
 
