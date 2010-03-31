@@ -65,11 +65,19 @@ class Rule
       elsif p.repeating?
         p.match?() #TODO note repeated checking
       end
-      handle_matcher(matcher)
+      handle_matcher(matcher) #may have to be inlined here just to possibly break
     end
   end
   def handle_matcher(matcher)
-    TODO
+    if required? && matcher.valid?
+      TODO #should return a success
+    elsif required?
+      TODO #should return a hard fail
+    elsif !required? && matcher.valid?
+      TODO #should continue on further
+    else #!req and !valid
+      TODO #just continue on, or return a soft fail
+    end
   end
 end
 
@@ -93,6 +101,9 @@ class Production
   
   def wrapped?; [:optional, :repeating, :group].include? @type end
   def unwrap!; @text = @text[1...-1].strip end
+  def required?; @type != :repeating && @type != :optional end #TODO needs verify
+  def optional?; @type == :optional end #TODO check that repeating is a false here
+  def repeating?; @type == :repeating end
   
   def create_subproductions
     @subproductions = []
@@ -119,6 +130,22 @@ class Production
       Matcher.new(text, type)
     end
   end
+  def match?() #will take params
+    matches = []
+    @subproductions.each do |s|
+      match = s.match?() #params of parent? the s's should handle it themselves i think
+      #TODO: apply match to array only if required to
+      #TODO: execute a reloop through current, with new params somehow (globals i guess)
+      #^= if in a repeater where the most recent result was nonempty and valid
+      #OR AM I HANDLING REPEATING IN A MATCHER ITSELF
+      ERROR OUT unless match.nonfatal?
+      matches << match #if everything is peachy, anyway
+    end
+    #then return true or false based on the whole subproductions list.
+    #this should never have a choice to make.
+    #it just matches every member and gets a matcher out of them. some may return deadmatchers,
+    #but if they didn't return some custom FATAL matcher
+  end
 end
 
 class Matcher
@@ -135,6 +162,9 @@ class Matcher
       #should never be here =)
     end
   end
+
+  def valid?; @type != :invalid end #am i the right class?
+  def nonfatal?; @type != :fatal end #am i the right class with that dude?
 end
 
 class GrammarGenerator
