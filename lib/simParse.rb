@@ -47,7 +47,7 @@ class Rule
     create_productions
   end
   def to_s #more like to_delete (TODO)
-    txt = "Rule: #{@name}: #{@text}\n"
+    txt = "Rule: #{@name}:\nText: ~#{@text}~\n"
     @productions.each{|p| txt << p.to_s; txt << "\n"}
     txt
   end
@@ -223,7 +223,7 @@ class Parser
     end
     if @options[:full] : parse; end
     if @options[:stdout] || @options[:full] : emit_tree; end
-    print_grammar #TODO delete me
+    print_grammar if @options[:debug]
   end
   def print_grammar
     @grammar_rules.each do |r|
@@ -307,6 +307,7 @@ if $0 == __FILE__
         when "-s" : opts[:stdout]       = opts[:full] = true
         when "-f" : opts[:file]         = opts[:full] = true
         when "-g" : opts[:grammar_file] = filename#.drop_extension.add__grammar.grm #BROKEN FOR NOW
+        when "-d" : opts[:debug] = true
       else
         puts "Unrecognized option: '#{arg}'. Attempting run anyway."
       end
