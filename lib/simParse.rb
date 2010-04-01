@@ -10,7 +10,6 @@ class Tree
   
   def full_print; @root.tree_print          end
   def full_stringify; @root.tree_stringify  end
-  
 end
 
 class Node
@@ -33,9 +32,12 @@ class Node
     str
   end
   
-  def nonfatal?; @content != :fatal end
+  def backtrack;
+    if nonfatal? : @content.backtrack end
+    @children.each{|c| c.backtrack}
+  end
+  def nonfatal?; !([:fatal, :literal_mismatch, :type_mismatch, :subrule_mismatch].include?(@content) )end
   def orphan!; @parent = nil end
-  
 end
 
 class Rule
@@ -143,7 +145,7 @@ class Production
       match = s.match?(tokenstream) #expecting match to be a node
       fatal = true unless match.nonfatal?
       matches << match #TODO work here.
-      if fatal : @subproductions.each{|s| s.return} end #Backtracking
+      if fatal : matches.each{|s| s.backtrack} end #Backtracking
     end
     if matches.is_a_valid_array_of_nodes && required? #TODO rename required
       n = Node.new()
@@ -211,9 +213,9 @@ class Matcher
     end
   end
   
+  def backtrack; $current_index -= 1 end #is this correct?
   def matcher_fail(how); Node.new(how) end #as in what's the symbol for how it failed
   def valid?; @type != :invalid end #am i the right class?
-  def nonfatal?; @type != :fatal end #am i the right class with that dude?
 end
 
 class GrammarGenerator
