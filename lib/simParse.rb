@@ -14,25 +14,26 @@ class Tree
 end
 
 class Node
-  attr_accessor :children, :parent, :text
-  def initialize(parent, text)
+  attr_accessor :children, :parent, :content
+  def initialize(content, parent = nil)
     @children = []
     @parent = parent
-    @text = text
+    @content = content
   end
   def tree_print(level = 0)
     level.times{print "\t"}
-    puts @text
+    puts @content
     @children.each{|c| c.tree_print(level+1)}
   end
   def tree_stringify(level = 0)
     str = ""
     level.times{str << "\t"}
-    str << @text
+    str << @content.to_s
     @children.each{|c| str << tree_stringify(level+1)}
     str
   end
   
+  def nonfatal?; @content != :fatal end
   def orphan!; @parent = nil end
   
 end
@@ -176,7 +177,7 @@ class Matcher
   attr_accessor :text, :type
   def initialize(text, type)
     @text = text
-    @type = type
+    @type = type.to_s
   end
   def to_s
     "\t--Matcher: #{@text}\t#{@type}"
@@ -186,30 +187,31 @@ class Matcher
     if @type == "literal"
       if @text == token.value
         $current_index += 1
-        Node.new() #TODO how to fill
+        Node.new(token) #TODO how to fill
       else
-        matcher_fail
+        matcher_fail(:literal_mismatch)
       end
     elsif @type == "type"
-      $current_index += 1
-      if @text == token.type
-        Node.new() #TODO how to fill
+      if @text.downcase == token.type.downcase
+        $current_index += 1
+        Node.new(token) #TODO how to fill
       else
-        matcher_fail #TODO This was a joke, but how about matcher_fail creates a hard_fail object
+        matcher_fail(:type_mismatch)
       end
     elsif @type == "metasymbol"
-      result = $parser.grammar_rules[text.to_sym].match?(tokenstream)
+      result = $parser.grammar_rules[text].match?(tokenstream)
       if result #TODO check that is it a sucess, not just empty
         result
       else
-        matcher_fail #This is all factorable TODO
+        matcher_fail(:subrule_mismatch) #This is all factorable TODO
       end
     else
       #all types should be accounted for
-      puts "FATAL ERROR"
+      puts "FATAL ERROR: Class: Matcher, Method: match?(), Name: #{@type}: #{@text}"
     end
   end
-    
+  
+  def matcher_fail(how); Node.new(how) end #as in what's the symbol for how it failed
   def valid?; @type != :invalid end #am i the right class?
   def nonfatal?; @type != :fatal end #am i the right class with that dude?
 end
@@ -251,6 +253,8 @@ class Parser
     else
       lexer_token_stream(@filename)
     end
+  end
+  def after_create
     if @options[:full] : parse; end
     if @options[:stdout] || @options[:full] : emit_tree; end
     print_grammar if @options[:debug]
@@ -300,7 +304,7 @@ class Parser
     end
   end
   def start_symbol
-    @grammar_rules[:start_symbol]
+    @grammar_rules[:start_symbol].to_s
   end
   def match?(symbol)
     $current_index = 0
@@ -345,6 +349,7 @@ if $0 == __FILE__
       end
     end
     opts[:grammar_file] ||= "simParse_grammar.grm"
-    parser = Parser.new(filename, opts)
+    $parser = Parser.new(filename, opts)
+    $parser.after_create
   end
 end
