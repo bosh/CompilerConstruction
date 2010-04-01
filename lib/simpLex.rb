@@ -138,6 +138,7 @@ class Token
     end
   end
   
+  def to_s; "#{@type}|#{@value}"  end
   def << (str);           @text << str  end
   def to_terminal;        @value        end
   def grouping_symbol?;   @@groups.index(@text)   end
