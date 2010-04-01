@@ -14,22 +14,22 @@ class Tree
 end
 
 class Node
-  attr_accessor :contents, :parent, :text
+  attr_accessor :children, :parent, :text
   def initialize(parent, text)
-    @contents = []
+    @children = []
     @parent = parent
     @text = text
   end
   def tree_print(level = 0)
     level.times{print "\t"}
     puts @text
-    @contents.each{|c| c.tree_print(level+1)}
+    @children.each{|c| c.tree_print(level+1)}
   end
   def tree_stringify(level = 0)
     str = ""
     level.times{str << "\t"}
     str << @text
-    @contents.each{|c| str << tree_stringify(level+1)}
+    @children.each{|c| str << tree_stringify(level+1)}
     str
   end
   
