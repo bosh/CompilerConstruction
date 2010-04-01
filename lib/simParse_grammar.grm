@@ -2,7 +2,7 @@ grammar Pseudocal
   start_symbol :Program
   
   rule Program
-    "Program" id ";" [TypeDefinitions] [VariableDeclarations] [SubprogramDeclarations] CompoundStatement "."
+    "program" id ";" [TypeDefinitions] [VariableDeclarations] [SubprogramDeclarations] CompoundStatement "."
   endrule
   rule TypeDefinitions
     "type" TypeDefinition ";" {TypeDefinition ";"}
