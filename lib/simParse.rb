@@ -139,23 +139,33 @@ class Production
     matches = []
     @subproductions.each do |s|
       match = s.match?(tokenstream) #expecting match to be a node
+      break unless match.nonfatal?
       #TODO: apply match to array only if required to
       #TODO: execute a reloop through current, with new params somehow (globals i guess)
       #^= if in a repeater where the most recent result was nonempty and valid
       #OR AM I HANDLING REPEATING IN A MATCHER ITSELF
-      break unless match.nonfatal?
       matches << match
     end
     if matches.is_a_valid_array_of_nodes && required? #TODO rename required
       n = Node.new()
       n.children = matches
       return n
-    elsif required?
-      
-    elsif optional? 
-      
+    elsif required? #but also not valid
+      return (soft_fail = false) #TODO hehe fixme
+    elsif optional?
+      if matches.is_a_valid_array_of_nodes? #TODO factorable/inlinable
+        return matches
+      else
+        return (soft_fail = true) #TODO hehe here too
+      end
     elsif repeating?
-      
+      if matches.is_a_valid_array_of_nodes #TODO: get a better name
+        tail = match?(tokenstream) #This is why there is backtracking and a global pointer
+        if tail : matches << tail end
+        return matches
+      else
+        return (soft_fail = true) #TODO one more
+      end
     end
     #then return true or false based on the whole subproductions list.
     #this should probably never have a choice to make.
