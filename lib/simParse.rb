@@ -63,29 +63,22 @@ class Rule
     end
   end
   def match?(tokenstream)
+    matcher = nil
     @productions.each do |p|
       matcher = if p.required? #probably factorable or movable into another class...
         p.match?(tokenstream) #no extra params
       elsif p.optional?
-        p.match?(tokenstream) #TODO note optionality
+        p.match?(tokenstream)
       elsif p.repeating?
-        p.match?(tokenstream) #TODO note repeated checking
+        p.match?(tokenstream)
       end
-      handle_matcher(matcher) #may have to be inlined here just to possibly break
+      if matcher.valid?
+        break
+      else
+        matcher = nil #TODO Make nil be invalid/a fail
+      end
     end
-    #THIS MUST RETURN A NODE HERE
-    #if error then return Node.new(parent? oh boy, "ERROR") #could probably be more descriptive
-  end
-  def handle_matcher(matcher)
-    if required? && matcher.valid?
-      TODO #should return a success
-    elsif required?
-      TODO #should return a hard fail
-    elsif !required? && matcher.valid?
-      TODO #should continue on further
-    else #!req and !valid
-      TODO #just continue on, or return a soft fail
-    end
+    matcher
   end
 end
 
@@ -145,13 +138,24 @@ class Production
   def match?(tokenstream) #will take params
     matches = []
     @subproductions.each do |s|
-      match = s.match?(tokenstream) #params of parent? the s's should handle it themselves i think
+      match = s.match?(tokenstream) #expecting match to be a node
       #TODO: apply match to array only if required to
       #TODO: execute a reloop through current, with new params somehow (globals i guess)
       #^= if in a repeater where the most recent result was nonempty and valid
       #OR AM I HANDLING REPEATING IN A MATCHER ITSELF
-      ERROR OUT unless match.nonfatal?
-      matches << match #if everything is peachy, anyway
+      break unless match.nonfatal?
+      matches << match
+    end
+    if matches.is_a_valid_array_of_nodes && required? #TODO rename required
+      n = Node.new()
+      n.children = matches
+      return n
+    elsif required?
+      
+    elsif optional? 
+      
+    elsif repeating?
+      
     end
     #then return true or false based on the whole subproductions list.
     #this should probably never have a choice to make.
