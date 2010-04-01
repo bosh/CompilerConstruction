@@ -183,15 +183,33 @@ class Matcher
   end
   def match?(tokenstream)
     token = tokenstream[$current_index]
-    if @type == "literal"         : @text == token.value
-      elsif @type == "type"       : @text == token.type
-      elsif @type == "metasymbol" : $parser.grammar_rules[text.to_sym].match?(token)
+    if @type == "literal"
+      if @text == token.value
+        $current_index += 1
+        Node.new() #TODO how to fill
+      else
+        matcher_fail
+      end
+    elsif @type == "type"
+      $current_index += 1
+      if @text == token.type
+        Node.new() #TODO how to fill
+      else
+        matcher_fail #TODO This was a joke, but how about matcher_fail creates a hard_fail object
+      end
+    elsif @type == "metasymbol"
+      result = $parser.grammar_rules[text.to_sym].match?(tokenstream)
+      if result #TODO check that is it a sucess, not just empty
+        result
+      else
+        matcher_fail #This is all factorable TODO
+      end
     else
       #all types should be accounted for
       puts "FATAL ERROR"
     end
   end
-
+    
   def valid?; @type != :invalid end #am i the right class?
   def nonfatal?; @type != :fatal end #am i the right class with that dude?
 end
