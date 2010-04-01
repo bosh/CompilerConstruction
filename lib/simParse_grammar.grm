@@ -97,7 +97,7 @@ grammar Pseudocal
     ("*" / "div" / "mod" / "and")
   endrule
   rule Factor
-    (int / string / Variable / FunctionReference / "not" Factor / "("Expression")")
+    (int / str / Variable / FunctionReference / "not" Factor / "("Expression")")
   endrule
   rule FunctionReference
     id "(" ActualParameterList ")"
