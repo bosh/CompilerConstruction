@@ -68,14 +68,8 @@ class Rule
   def match?(tokenstream)
     matcher = nil
     @productions.each do |p|
-      matcher = if p.required? #probably factorable or movable into another class...
-        p.match?(tokenstream) #no extra params
-      elsif p.optional?
-        p.match?(tokenstream)
-      elsif p.repeating?
-        p.match?(tokenstream)
-      end
-      if matcher.valid?
+      matcher = p.match?(tokenstream) #no extra params
+      if matcher && matcher.valid?
         break
       else
         matcher = nil #TODO Make nil be invalid/a fail
@@ -147,12 +141,12 @@ class Production
       matches << match #TODO work here.
       if fatal : matches.each{|s| s.backtrack} end #Backtracking
     end
-    if matches.is_a_valid_array_of_nodes && required? #TODO rename required
+    if !fatal && required? #TODO rename required
       n = Node.new()
       n.children = matches
       return n
     elsif optional?
-      if matches.is_a_valid_array_of_nodes? #TODO factorable/inlinable
+      if !fatal #TODO factorable/inlinable
         n = Node.new()
         n.children = matches
         return n
@@ -213,11 +207,13 @@ class Matcher
     end
   end
   
-  def backtrack; $current_index -= 1 end #is this correct?
+  def backtrack;
+    $current_index -= 1
+  end
   def matcher_fail(how); Node.new(how) end #as in what's the symbol for how it failed
-  def valid?; @type != :invalid end #am i the right class?
+  #def valid?; @type != :invalid end
 end
-
+  
 class GrammarGenerator
   attr_accessor :filename, :grammartext, :grammar, :name
   def initialize(filename)
