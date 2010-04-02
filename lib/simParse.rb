@@ -32,7 +32,7 @@ class Node
   end
   def tree_print(level = 0)
     level.times{print "|\t"}
-    puts @content.to_s.strip
+    puts @content.to_s.strip #The to_s currently has extra tabbage
     @children.each{|c| c.tree_print(level+1)}
   end
   def tree_stringify(level = 0)
@@ -77,10 +77,10 @@ class Rule
     match_node = nil
     @productions.each do |p|
       match_node = p.match?(tokenstream) #no extra params
-      if match_node && match_node.nonfatal?
+      if match_node.class == Node && match_node.nonfatal?
         break
       else
-        match_node = nil #TODO Make nil be invalid/a fail
+        match_node = (soft_fail = true)
       end
     end
     match_node
@@ -119,8 +119,8 @@ class Production
     @subproductions = []
     until @text.empty? : @subproductions << matchmake_next_metasymbol end
   end
-  def matchmake_next_metasymbol #this is an easy factor (the $1s)
-    matcher_type = nil
+  def matchmake_next_metasymbol
+    matcher_type = nil #easy switch statement factor
     if @text =~       /\A"(.*?)"/     : matcher_type = :literal
       elsif @text =~  /\A([a-z]\w*)/  : matcher_type = :type
       elsif @text =~  /\A([A-Z]\w*)/  : matcher_type = :metasymbol
@@ -135,23 +135,23 @@ class Production
   end
   def create_matcher(text, type)
     if [:optional, :repeating, :group].include? type
-      Rule.new("anonymous", text) #now with infinite recursion awesomeness
+      Rule.new("anonymous", text)
     else
       Matcher.new(text, type)
     end
   end
-  def match?(tokenstream) #will take params
+  def match?(tokenstream)
     matches = []
     fatal = false
     @subproductions.each do |s|
       match = s.match?(tokenstream) #expecting match to be a node
-      fatal = true unless match.nonfatal?
-      matches << match #TODO work here.
+      fatal = true if match.nil? || !match.nonfatal?
+      matches << match
     end
     if fatal
       matches.each{|s| s.backtrack if s.class == Node} #Backtracking
-      matches = [] #Empty the matches
-    elsif !fatal && required? #TODO rename required
+      matches = []
+    elsif !fatal && required?
       n = Node.new(@subproductions)
       n.children = matches
       return n
@@ -185,14 +185,14 @@ class Matcher
     if @type == "literal"
       if @text == token.value
         $current_index += 1
-        Node.new(token) #TODO how to fill
+        Node.new(token)
       else
         matcher_fail(:literal_mismatch)
       end
     elsif @type == "type"
       if token && @text.downcase == token.type.downcase
         $current_index += 1
-        Node.new(token) #TODO how to fill
+        Node.new(token)
       else
         matcher_fail(:type_mismatch)
       end
@@ -201,10 +201,9 @@ class Matcher
       if result #TODO check that is it a sucess, not just empty
         result
       else
-        matcher_fail(:subrule_mismatch) #This is all factorable TODO
+        matcher_fail(:subrule_mismatch) #TODO This is all factorable
       end
-    else
-      #all types should be accounted for
+    else #all types should be accounted for
       puts "FATAL ERROR: Class: Matcher, Method: match?(), Name: #{@type}: #{@text}"
     end
   end
@@ -213,7 +212,6 @@ class Matcher
     $current_index -= 1
   end
   def matcher_fail(how); Node.new(how) end #as in what's the symbol for how it failed
-  #def valid?; @type != :invalid end
 end
   
 class GrammarGenerator
