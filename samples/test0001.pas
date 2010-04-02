@@ -32,12 +32,7 @@ end;
 function foo3(a : integer) : s;
 begin
 	a := 0
-end;
-
-function foo4(a : integer) : array[1..10] of integer; { parser error here }
-begin
-        foo4[0] := 0
-end;
+end
 
 begin
 	z := foo3(3)

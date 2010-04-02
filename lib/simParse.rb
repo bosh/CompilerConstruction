@@ -84,7 +84,7 @@ class Rule
     end
   end
   def match?(tokenstream)
-    #puts "#{$current_index} #{@name}"
+    puts "#{$current_index} #{@name}" unless ARGV.include? "-d"
     match_node = nil
     @productions.each do |p|
       match_node = p.match?(tokenstream) #no extra params
@@ -156,7 +156,7 @@ class Production
     end
   end
   def match?(tokenstream)
-    #puts " #{$current_index}\t#{@text}"
+    puts " #{$current_index}\t#{@text}" unless ARGV.include? "-d"
     matches = []
     fatal = false
     @subproductions.each do |s|
@@ -211,7 +211,7 @@ class Matcher
     "\t--Matcher: #{@text}\t#{@type}"
   end
   def match?(tokenstream)
-    #puts "  #{$current_index}\t\t#{@text}|#{@type}"
+    puts "  #{$current_index}\t\t#{@text}|#{@type}" unless ARGV.include? "-d"
     token = tokenstream[$current_index]
     if @type == "literal"
       if @text == token.value
@@ -327,7 +327,7 @@ class Parser
       @filename =~ /\A(.*)\.\w+\z/
       outfile = $1 << "_parsed.txt"
       if @options[:overwrite] || !File.exists?(outfile)
-        puts "Writing to file!"
+        puts "Parse Successful: Writing to file!"
         File.new(outfile, "w")
         File.open(outfile, 'a') {|f| f.write(text)}
       end
