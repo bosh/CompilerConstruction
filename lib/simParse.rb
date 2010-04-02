@@ -6,10 +6,10 @@ class TrueClass
   def tree_print(what); "TruePrint: #{what}" end
   def children; [] end
 end
+
 class Array
-  def tree_print(level)
-    self.each{|m| m.tree_print(level)}
-  end
+  def tree_print(level); self.each{|m| m.tree_print(level)} end
+  def backtrack; self.each{|i| i.backtrack} end
 end
 
 class Tree
@@ -43,9 +43,10 @@ class Node
     str
   end
   
-  def backtrack; @children.each{|c| c.backtrack} end
+  def backtrack; @children.each{|c| if c.class != TrueClass : c.backtrack end} end
   def nonfatal?; !([:fatal, :literal_mismatch, :type_mismatch, :subrule_mismatch].include?(@content) )end
   def orphan!; @parent = nil end
+  def to_s; "|#{@content}: #{@children}|" end
 end
 
 class Rule
@@ -146,6 +147,7 @@ class Production
     @subproductions.each do |s|
       match = s.match?(tokenstream) #expecting match to be a node
       fatal = true if match.nil? || !match.nonfatal?
+      break if fatal
       matches << match
     end
     if fatal
@@ -161,7 +163,7 @@ class Production
       return n
     elsif !fatal && repeating?
       tail = match?(tokenstream) #This is why there is backtracking and a global pointer
-      if tail : matches << tail.children end
+      if tail.class == Node : matches << tail.children end
       n = Node.new(@subproductions)
       n.children = matches
       return n
@@ -208,9 +210,7 @@ class Matcher
     end
   end
   
-  def backtrack;
-    $current_index -= 1
-  end
+  def backtrack; $current_index -= 1 end
   def matcher_fail(how); Node.new(how) end #as in what's the symbol for how it failed
 end
   
