@@ -2,6 +2,7 @@ require 'simpLex'
 $current_index = 0
 
 class TrueClass
+  def backtrack; true end
   def nonfatal?; true end
   def tree_print(what); "TruePrint: #{what}" end
   def children; [] end
@@ -10,6 +11,12 @@ end
 class Array
   def tree_print(level); self.each{|m| m.tree_print(level)} end
   def backtrack; self.each{|i| i.backtrack} end
+  
+  def tree_stringify(level)
+    str = ""
+    self.each{|m| str << m.tree_stringify(level)}
+    str
+  end
 end
 
 class Tree
@@ -37,14 +44,16 @@ class Node
   end
   def tree_stringify(level = 0)
     str = ""
-    level.times{str << "\t"}
+    level.times{str << "|\t"}
     str << @content.to_s
-    @children.each{|c| str << tree_stringify(level+1)}
+    str << "\n"
+    @children.each{|c| str << c.tree_stringify(level+1)}
     str
   end
   
-  def backtrack; @children.each{|c| if c.class != TrueClass : c.backtrack end} end
+  def backtrack; @children.each{|c| c.backtrack } end
   def nonfatal?; !([:fatal, :literal_mismatch, :type_mismatch, :subrule_mismatch].include?(@content) )end
+  def acceptable_nonmatch?; [:optional_fail , :repeater_fail].include?(@content) end
   def orphan!; @parent = nil end
   def to_s; "|#{@content}: #{@children}|" end
 end
@@ -75,13 +84,18 @@ class Rule
     end
   end
   def match?(tokenstream)
+    #puts "#{$current_index} #{@name}"
     match_node = nil
     @productions.each do |p|
       match_node = p.match?(tokenstream) #no extra params
       if match_node.class == Node && match_node.nonfatal?
         break
       else
-        match_node = (soft_fail = true)
+        if match_node.acceptable_nonmatch?
+          match_node = Node.new(:optional_fail)
+        else
+          match_node = Node.new(:fatal)
+        end
       end
     end
     match_node
@@ -142,31 +156,45 @@ class Production
     end
   end
   def match?(tokenstream)
+    #puts " #{$current_index}\t#{@text}"
     matches = []
     fatal = false
     @subproductions.each do |s|
       match = s.match?(tokenstream) #expecting match to be a node
       fatal = true if match.nil? || !match.nonfatal?
       break if fatal
+      if match.acceptable_nonmatch? : match.backtrack; next end
       matches << match
     end
-    if fatal
-      matches.each{|s| s.backtrack if s.class == Node} #Backtracking
-      matches = []
+    if fatal && required?
+      matches.each{|m| m.backtrack }
+      return Node.new(:fatal)
     elsif !fatal && required?
       n = Node.new(@subproductions)
       n.children = matches
       return n
-    elsif !fatal && optional?
-      n = Node.new(@subproductions)
-      n.children = matches
-      return n
-    elsif !fatal && repeating?
-      tail = match?(tokenstream) #This is why there is backtracking and a global pointer
-      if tail.class == Node : matches << tail.children end
-      n = Node.new(@subproductions)
-      n.children = matches
-      return n
+    elsif optional?
+      if !fatal
+        n = Node.new(@subproductions)
+        n.children = matches
+        return n
+      else
+        n = Node.new(:optional_fail)
+        n.children = matches
+        return n
+      end
+    elsif repeating?
+      if !fatal
+        tail = match?(tokenstream) #This is why there is backtracking and a global pointer
+        if tail.class == Node : matches << tail.children end
+        n = Node.new(@subproductions)
+        n.children = matches
+        return n
+      else
+        n = Node.new(:repeater_fail)
+        n.children = matches
+        return n
+      end
     else #this means you're invalid and nobody loves you
       return (soft_fail = false) #This is an exterior (TODO)
     end
@@ -183,6 +211,7 @@ class Matcher
     "\t--Matcher: #{@text}\t#{@type}"
   end
   def match?(tokenstream)
+    #puts "  #{$current_index}\t\t#{@text}|#{@type}"
     token = tokenstream[$current_index]
     if @type == "literal"
       if @text == token.value
@@ -295,9 +324,12 @@ class Parser
     if @options[:stdout] : @tree.full_print; end
     if @options[:file]
       text = @tree.full_stringify
-      if @options[:overwrite] || !File.exists?(@filename)
-        File.new(@filename, "w")
-        File.open(@filename, 'a') {|f| f.write(text)}
+      @filename =~ /\A(.*)\.\w+\z/
+      outfile = $1 << "_parsed.txt"
+      if @options[:overwrite] || !File.exists?(outfile)
+        puts "Writing to file!"
+        File.new(outfile, "w")
+        File.open(outfile, 'a') {|f| f.write(text)}
       end
     end
   end

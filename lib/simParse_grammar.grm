@@ -41,13 +41,13 @@ grammar Pseudocal
     (SimpleStatement / StructuredStatement)
   endrule
   rule SimpleStatement
-    [(AssignmentStatement / ProcedureStatement)]
+    [id (AssignmentStatement / ProcedureStatement)]
   endrule
   rule AssignmentStatement 
-    Variable ":=" Expression
+    ComponentSelection ":=" Expression
   endrule
   rule ProcedureStatement
-    id "(" ActualParameterList ")"
+    "(" ActualParameterList ")"
   endrule
   rule StructuredStatement
     (MatchedStatement / OpenStatement)
@@ -97,13 +97,10 @@ grammar Pseudocal
     ("*" / "div" / "mod" / "and")
   endrule
   rule Factor
-    (int / str / Variable / FunctionReference / "not" Factor / "("Expression")")
+    (int / str / id ComponentSelection / FunctionReference / "not" Factor / "("Expression")")
   endrule
   rule FunctionReference
     id "(" ActualParameterList ")"
-  endrule
-  rule Variable
-    id ComponentSelection
   endrule
   rule ComponentSelection
     [("." id / "[" Expression "]" ) ComponentSelection]
@@ -118,8 +115,3 @@ grammar Pseudocal
     ("+" / "-")
   endrule
 endgrammar
-##########
-#  rule id; :type; endrule
-#  rule int; :type endrule
-#  rule string; :type endrule
-#  in each of these three cases, grammar[:id|:int|:str] will be undefined, and thus you try Token.type instead of Token.value
