@@ -1,6 +1,17 @@
 require 'simpLex'
 $current_index = 0
 
+class TrueClass
+  def nonfatal?; true end
+  def tree_print(what); "TruePrint: #{what}" end
+  def children; [] end
+end
+class Array
+  def tree_print(level)
+    self.each{|m| m.tree_print(level)}
+  end
+end
+
 class Tree
   attr_accessor :root
   def initialize(node)
@@ -20,8 +31,8 @@ class Node
     @content = content
   end
   def tree_print(level = 0)
-    level.times{print "\t"}
-    puts @content
+    level.times{print "|\t"}
+    puts @content.to_s.strip
     @children.each{|c| c.tree_print(level+1)}
   end
   def tree_stringify(level = 0)
@@ -32,10 +43,7 @@ class Node
     str
   end
   
-  def backtrack;
-    if nonfatal? : @content.backtrack end
-    @children.each{|c| c.backtrack}
-  end
+  def backtrack; @children.each{|c| c.backtrack} end
   def nonfatal?; !([:fatal, :literal_mismatch, :type_mismatch, :subrule_mismatch].include?(@content) )end
   def orphan!; @parent = nil end
 end
@@ -66,16 +74,16 @@ class Rule
     end
   end
   def match?(tokenstream)
-    matcher = nil
+    match_node = nil
     @productions.each do |p|
-      matcher = p.match?(tokenstream) #no extra params
-      if matcher && matcher.valid?
+      match_node = p.match?(tokenstream) #no extra params
+      if match_node && match_node.nonfatal?
         break
       else
-        matcher = nil #TODO Make nil be invalid/a fail
+        match_node = nil #TODO Make nil be invalid/a fail
       end
     end
-    matcher
+    match_node
   end
 end
 
@@ -139,30 +147,24 @@ class Production
       match = s.match?(tokenstream) #expecting match to be a node
       fatal = true unless match.nonfatal?
       matches << match #TODO work here.
-      if fatal : matches.each{|s| s.backtrack} end #Backtracking
     end
-    if !fatal && required? #TODO rename required
-      n = Node.new()
+    if fatal
+      matches.each{|s| s.backtrack if s.class == Node} #Backtracking
+      matches = [] #Empty the matches
+    elsif !fatal && required? #TODO rename required
+      n = Node.new(@subproductions)
       n.children = matches
       return n
-    elsif optional?
-      if !fatal #TODO factorable/inlinable
-        n = Node.new()
-        n.children = matches
-        return n
-      else
-        return (soft_fail = true) #TODO hehe here too
-      end
-    elsif repeating?
-      if matches.is_a_valid_array_of_nodes #TODO: get a better name
-        tail = match?(tokenstream) #This is why there is backtracking and a global pointer
-        if tail : matches << tail.children end
-        n = Node.new
-        n.children = matches
-        return n
-      else
-        return (soft_fail = true) #TODO one more
-      end
+    elsif !fatal && optional?
+      n = Node.new(@subproductions)
+      n.children = matches
+      return n
+    elsif !fatal && repeating?
+      tail = match?(tokenstream) #This is why there is backtracking and a global pointer
+      if tail : matches << tail.children end
+      n = Node.new(@subproductions)
+      n.children = matches
+      return n
     else #this means you're invalid and nobody loves you
       return (soft_fail = false) #This is an exterior (TODO)
     end
@@ -188,7 +190,7 @@ class Matcher
         matcher_fail(:literal_mismatch)
       end
     elsif @type == "type"
-      if @text.downcase == token.type.downcase
+      if token && @text.downcase == token.type.downcase
         $current_index += 1
         Node.new(token) #TODO how to fill
       else
@@ -253,9 +255,9 @@ class Parser
     end
   end
   def after_create
-    if @options[:full] : parse; end
-    if @options[:stdout] || @options[:full] : emit_tree; end
     print_grammar if @options[:debug]
+    parse if @options[:full]
+    emit_tree if @options[:stdout] || @options[:full]
   end
   def print_grammar
     @grammar_rules.each do |r|
@@ -310,11 +312,11 @@ class Parser
   end
   def parse
     result = match?(start_symbol)
-    if result.text =~ /\AERROR:/
-      puts result.text
-      exit(0)
-    else
+    if result && result.nonfatal?
       @tree = Tree.new(result)
+    else
+      puts "Parser failed at parsing. Soz."
+      exit(0)
     end
   end
 end
