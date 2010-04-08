@@ -45,7 +45,31 @@ end
 class Parser
   attr_accessor :filename, :options, :grammar_rules, :tree, :tokens
   def initialize(filename, opts = {})
+    @options = opts
+    @filename = filename
+    load_grammar_rules
+    load_token_steam
   end
+  def load_grammar_rules
+    GrammarGenerator.new(@options[:grammar_file]) do |g| #does this work
+      @grammar_rules = g.grammar #a hash
+    end
+  end
+  def load_token_steam
+    (premade_token_stream?)? load_textfile_tokens : load_simplex_tokens
+  end
+  def premade_token_stream?
+    @options[:from_tokens]
+  end
+  def load_simplex_tokens
+    Lexer.new(@filename, {:internal => true, :full => true}) do |lex|
+      @tokens = lex.token_list
+    end
+  end
+  def load_textfile_tokens
+    #grossness
+  end
+  
 end
 
 if $0 == __FILE__
