@@ -50,26 +50,57 @@ class Parser
     load_grammar_rules
     load_token_steam
   end
+  def after_create
+    print_grammar if debug?
+    parse if parse_after_create?
+    emit_tree if emit_after_create?
+  end
+  
+  def debug?; $debug end
+  def parse_after_create?; @options[:full] end
+  def cmd_line_output?; @options[:stdout] end
+  def file_output?; @options[:file] end
+  def emit_after_create?; @options[:full] || @options[:stdout] end
+  def premade_token_stream? @options[:from_tokens] end
+  def start_symbol; @grammar_rules[:start_symbol].to_s end
+  def print_grammar; puts @grammar_rules end#may need more specificity depending on what a hash.to_s is
+  def overwrite_output?; options[:overwrite] end
+  
   def load_grammar_rules
-    GrammarGenerator.new(@options[:grammar_file]) do |g| #does this work
+    GrammarGenerator.new(@options[:grammar_file]) do |g| #TODO does this work
       @grammar_rules = g.grammar #a hash
     end
   end
   def load_token_steam
     (premade_token_stream?)? load_textfile_tokens : load_simplex_tokens
   end
-  def premade_token_stream?
-    @options[:from_tokens]
-  end
   def load_simplex_tokens
     Lexer.new(@filename, {:internal => true, :full => true}) do |lex|
-      @tokens = lex.token_list
+      @tokens = lex.token_list #TODO does this work
     end
   end
   def load_textfile_tokens
     #grossness
   end
-  
+  def parse
+    result = match?(start_symbol)
+    #TODO moar
+  end
+  def emit_tree
+    @tree.print if cmd_line_output?
+    if file_output?
+      @filename =~ /\A(.*)\.\w+\z/
+      outfile = "#{$1}_parsed.txt"
+      if overwrite_output? || !File.exists?(outfile)
+        puts "Parse successful! Writing to file #{outfile}."
+        File.new(outfile, 'w') #TODO can i make this one line?
+        File.open(outfile, 'a'){|f| f.write(@tree.stringify)}
+      end
+    end
+  end
+  def match?
+    #TODO
+  end
 end
 
 if $0 == __FILE__
@@ -93,5 +124,6 @@ if $0 == __FILE__
     end
     opts[:grammar_file] ||= "simParse_grammar.grm"
     $parser = Parser.new(filename, opts)
+    $parser.after_create
   end
 end
