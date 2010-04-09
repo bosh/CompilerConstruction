@@ -3,18 +3,30 @@ $current_index = 0
 $debug = true #TODO delete for production
 def debug?; $debug end
 class String #TODO make a helper and require it
+  def quoted?(style = :both)
+    if self[0,1] == self[-1,1]
+      if style == :single
+        self[0,1] == "'"
+      elsif style == :double
+        self[0,1] == '"'
+      else #both or an unrecognized, which defaults to both
+        self[0,1] == '"' || self[0,1] == "'"
+      end
+    else
+      false
+    end
+  end
   def dequote!
     replace(dequote)
   end
-  def dequote
-    text = self.strip
-    if text[0,1] == '"' && text[-1,1]
-      return text[1...-1].strip
+  def dequote #and strip. TODO: it may actually be poor form to _include_ the quoted check
+    if self.quoted?
+      return self[1...-1].strip
     else
-      return self
+      return self #TODO or should this be a false/nil/error?
     end
   end
-end
+end 
 
 class Tree
   attr_accessor :root
