@@ -1,11 +1,18 @@
 require 'simpLex'
+$debug = true #TODO delete for production
+def debug?; $debug end
 $current_index = 0
 
 class Tree
   attr_accessor :root
   def initialize(node)
   end
-  
+  def print
+    #TODO
+  end
+  def stringify
+    #TODO
+  end
 end
 
 class Node
@@ -53,15 +60,14 @@ class Parser
   def after_create
     print_grammar if debug?
     parse if parse_after_create?
-    emit_tree if emit_after_create?
+    emit_tree if emit_after_create? #TODO can't have a tree without parsing, so this could be inside the prev if
   end
   
-  def debug?; $debug end
   def parse_after_create?; @options[:full] end
   def cmd_line_output?; @options[:stdout] end
   def file_output?; @options[:file] end
   def emit_after_create?; @options[:full] || @options[:stdout] end
-  def premade_token_stream? @options[:from_tokens] end
+  def premade_token_stream?; @options[:from_tokens] end
   def start_symbol; @grammar_rules[:start_symbol].to_s end
   def print_grammar; puts @grammar_rules end#may need more specificity depending on what a hash.to_s is
   def overwrite_output?; options[:overwrite] end
@@ -111,13 +117,13 @@ if $0 == __FILE__
     filename = ARGV.delete_at(0)
     ARGV.each do |arg|
       case arg
-        when "-n" : opts[:full]         = false
         when "-a" : opts[:full]         = true
+        when "-d" : opts[:debug]        = true
+        when "-f" : opts[:file]         = opts[:full] = true
+        #when "-g" : opts[:grammar_file] = filename#.drop_extension.add__grammar.grm #BROKEN
+        when "-n" : opts[:full]         = false
         when "-o" : opts[:overwrite]    = true
         when "-s" : opts[:stdout]       = opts[:full] = true
-        when "-f" : opts[:file]         = opts[:full] = true
-        when "-g" : opts[:grammar_file] = filename#.drop_extension.add__grammar.grm #BROKEN FOR NOW
-        when "-d" : opts[:debug] = true
       else
         puts "Unrecognized option: '#{arg}'. Attempting run anyway."
       end

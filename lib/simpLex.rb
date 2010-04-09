@@ -182,8 +182,8 @@ Usage:\n\t$ruby simpLex filename [opts]\nOptions:
     opts[:source] = ARGV.delete_at 0
     ARGV.each do |arg|
       case arg
-        when "-d" : opts[:dirty]      = true
         when "-a" : opts[:full]       = true
+        when "-d" : opts[:dirty]      = true
         when "-o" : opts[:overwrite]  = true
         when "-s" : opts[:stdout]     = opts[:full] = true
         when arg[0..1]=="-f" : #broken
