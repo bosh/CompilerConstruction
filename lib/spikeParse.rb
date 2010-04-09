@@ -1,7 +1,20 @@
 require 'simpLex'
+$current_index = 0
 $debug = true #TODO delete for production
 def debug?; $debug end
-$current_index = 0
+class String #TODO make a helper and require it
+  def dequote!
+    replace(dequote)
+  end
+  def dequote
+    text = self.strip
+    if text[0,1] == '"' && text[-1,1]
+      return text[1...-1].strip
+    else
+      return self
+    end
+  end
+end
 
 class Tree
   attr_accessor :root
@@ -84,7 +97,22 @@ class Parser
     @tokens = lex.token_list
   end
   def load_textfile_tokens
-    #grossness
+    @tokens = []
+    lines = []
+    File.open(@filename){|f| lines = f.readlines}
+    while lines && lines.size > 0 #lines to make sure it isn't nil
+      lines.shift =~ /\A(\w+)\s+(.*)\z/
+      type = $1
+      value = $2.strip
+      if value[0,1] == '"'
+        until value[-1,1] == '"'
+          value << "\n#{lines.shift.strip}"
+        end
+        value.dequote!
+      end
+      
+      
+    end
   end
   def parse
     result = match?(start_symbol)
