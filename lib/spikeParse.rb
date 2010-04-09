@@ -30,13 +30,14 @@ end
 
 class Tree
   attr_accessor :root
-  def initialize(node)
+  def initialize(node = nil)
+    @root = node
   end
   def print
-    #TODO
+    puts stringify
   end
   def stringify
-    #TODO
+    @root.tree_stringify
   end
 end
 
@@ -45,6 +46,13 @@ class Node
   def initialize(content, parent = nil)
   end
 
+  def parse_error?; @content =~ /ERROR/ end #TODO this is mostly fake :)
+  def to_s #to_s is the single node version, it doesn't recurse on children
+    #TODO
+  end
+  def tree_stringify
+    #TODO
+  end
 end
 
 class Rule
@@ -88,25 +96,12 @@ class Parser
     emit_tree if emit_after_create? #TODO can't have a tree without parsing, so this could be inside the prev if
   end
   
-  def parse_after_create?; @options[:full] end
-  def cmd_line_output?; @options[:stdout] end
-  def file_output?; @options[:file] end
-  def emit_after_create?; @options[:full] || @options[:stdout] end
-  def premade_token_stream?; @options[:from_tokens] end
-  def start_symbol; @grammar_rules[:start_symbol].to_s end
-  def print_grammar; puts @grammar_rules end#may need more specificity depending on what a hash.to_s is
-  def overwrite_output?; options[:overwrite] end
-  
   def load_grammar_rules
     g = GrammarGenerator.new(@options[:grammar_file])
     @grammar_rules = g.grammar #a hash
   end
   def load_token_steam
     (premade_token_stream?)? load_textfile_tokens : load_simplex_tokens
-  end
-  def load_simplex_tokens
-    lex = Lexer.new(@filename, {:internal => true, :full => true})
-    @tokens = lex.token_list
   end
   def load_textfile_tokens
     @tokens = []
@@ -117,18 +112,26 @@ class Parser
       type = $1
       value = $2.strip
       if value[0,1] == '"'
-        until value[-1,1] == '"'
+        until value[-1,1] == '"' #or could do until value.quoted?
           value << "\n#{lines.shift.strip}"
         end
         value.dequote!
       end
-      
-      
+      @tokens << Token.new("", type, value) #TODO still needs a cleanup
     end
+  end
+  def load_simplex_tokens
+    lex = Lexer.new(@filename, {:internal => true, :full => true})
+    @tokens = lex.token_list
   end
   def parse
     result = match?(start_symbol)
-    #TODO moar
+    if result.parse_error?
+      puts "Parse error: #{result}"
+      exit(0) #TODO find a proper, in-module way to do this
+    else
+      @tree = Tree.new(result)
+    end
   end
   def emit_tree
     @tree.print if cmd_line_output?
@@ -145,6 +148,15 @@ class Parser
   def match?
     #TODO
   end
+  
+  def parse_after_create?; @options[:full] end
+  def cmd_line_output?; @options[:stdout] end
+  def file_output?; @options[:file] end
+  def emit_after_create?; @options[:full] || @options[:stdout] end
+  def premade_token_stream?; @options[:from_tokens] end
+  def print_grammar; puts @grammar_rules end#may need more specificity depending on what a hash.to_s is
+  def overwrite_output?; options[:overwrite] end
+  def start_symbol; @grammar_rules[:start_symbol].to_s end
 end
 
 if $0 == __FILE__
