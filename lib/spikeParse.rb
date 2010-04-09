@@ -73,17 +73,15 @@ class Parser
   def overwrite_output?; options[:overwrite] end
   
   def load_grammar_rules
-    GrammarGenerator.new(@options[:grammar_file]) do |g| #TODO does this work
-      @grammar_rules = g.grammar #a hash
-    end
+    g = GrammarGenerator.new(@options[:grammar_file])
+    @grammar_rules = g.grammar #a hash
   end
   def load_token_steam
     (premade_token_stream?)? load_textfile_tokens : load_simplex_tokens
   end
   def load_simplex_tokens
-    Lexer.new(@filename, {:internal => true, :full => true}) do |lex|
-      @tokens = lex.token_list #TODO does this work
-    end
+    lex = Lexer.new(@filename, {:internal => true, :full => true})
+    @tokens = lex.token_list
   end
   def load_textfile_tokens
     #grossness
