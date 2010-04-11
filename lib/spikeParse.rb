@@ -62,11 +62,12 @@ class Node
 end
 
 class Rule
-  attr_accessor :name, :text, :productions
+  attr_accessor :name, :text, :productions, :type
   def initialize(name, text)
     @name = name.strip
     @text = text.strip
     @productions = []
+    @type = :basic #The only nonbasics are opt/repeating
     create_productions
   end
   def to_s
@@ -84,8 +85,12 @@ class Rule
     prods = []
     if @text.wrapped?("(", ")") #Major limitation, there may not be different option sets in a rule at the same level/depth
       subproductions_from_text.each{|p| prods << p}
-    else
-      prods << @text
+    elsif @text.wrapped?("{", "}") #Major limitation again, no starting and ending with different option blocks
+      @type = :repeating
+      prods << @text[1...-1].strip
+    elsif @text.wrapped?("[", "]") #Major limitation again, no starting and ending with different option blocks
+      @type = :optional
+      prods << @text[1...-1].strip
     end
     prods
   end
@@ -103,7 +108,7 @@ class Rule
 end
 
 class Production
-  attr_accessor :text, :subproductions, :type
+  attr_accessor :text, :subproductions
   def initialize(text)
     @text = text.strip
     @subproductions = []
