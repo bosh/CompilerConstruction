@@ -1,7 +1,7 @@
 require 'simpLex'
 require 'string_helper'
 $current_index = 0
-$debug = true #TODO delete for production
+$debug = false #TODO delete for production
 def debug?; $debug end 
 
 class Tree
@@ -77,8 +77,8 @@ class Rule
   def add_production(text)
     @productions << Production.new(text)
   end
-  def match?
-    #TODO
+  def match?(tokenstream)
+    #Hardest part!
   end
 end
 
@@ -93,20 +93,20 @@ class Production
     until @text.empty? : @subproductions << subproduce_next_metasymbol end
   end
   def subproduce_next_metasymbol
-    m_type = nil
+    type = nil
     case @text
-      when /\A"(.*?)"/ : m_type= :literal
-      when /\A([a-z]\w*)/ : m_type = :type
-      when /\A([A-Z]\w*)/ : m_type = :metasymbol
-      when /\A(\[.*?\])/ : m_type = :optional
-      when /\A(\{.*?\})/ : m_type = :repeating
-      when /\A(\(.*?\))/ : m_type = :choice #Perhaps should be multiline (should all be?)
+      when /\A"(.*?)"/ : type= :literal
+      when /\A([a-z]\w*)/ : type = :type
+      when /\A([A-Z]\w*)/ : type = :metasymbol
+      when /\A(\[.*?\])/ : type = :optional
+      when /\A(\{.*?\})/ : type = :repeating
+      when /\A(\(.*?\))/ : type = :choice #Perhaps should be multiline (should all be?)
       else
         puts "FATAL ERROR IN METASYMBOL ANALYSIS: #{@text}"
     end
     sub_text = $1
-    @text = @text[(sub_text.length + ((m_type == :literal)? 2 : 0))..-1].strip
-    create_matcher(sub_text, m_type)
+    @text = @text[(sub_text.length + ((type == :literal)? 2 : 0))..-1].strip
+    create_matcher(sub_text, type)
   end
   def create_matcher(text, type)
     if [:optional, :repeating, :choice].include? type
@@ -161,7 +161,7 @@ class GrammarGenerator
   end
   def identify_start_symbol
     @grammar_text.match( /start_symbol :(\w+)/ )
-    @start_symbol = $1.to_sym
+    @start_symbol = $1
   end
   def create_rules
     rules = @grammar_text.scan( /(\A|\s+)rule\s+(\w+)\s+(.*?)\s+endrule/m )
@@ -179,9 +179,9 @@ class GrammarGenerator
       puts "Rule name conflict: #{rule.name}"
     end
   end
-  def registered?(rule)
-    @grammar[rule.name]
-  end
+  
+  def registered?(rule); @grammar[rule.name] end
+  def start_rule; @grammar[@start_symbol] end
 end
 
 class Parser
@@ -233,6 +233,10 @@ class Parser
       @tree = Tree.new(result)
     end
   end
+  def match?(start)
+    $current_index = 0
+    @grammar.start_rule.match?(@tokens)
+  end
   def emit_tree
     @tree.print if cmd_line_output?
     if file_output?
@@ -250,9 +254,6 @@ class Parser
     grammar_rules.each{|g| puts g[1].to_extended}
     puts "Start Symbol: #{@grammar.start_symbol}"
   end#may need more specificity depending on what a hash.to_s is
-  def match?
-    #TODO
-  end
   
   def parse_after_create?;    @options[:full]         end
   def file_output?;           @options[:file]         end
