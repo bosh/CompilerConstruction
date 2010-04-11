@@ -162,9 +162,23 @@ class GrammarGenerator
     @start_symbol = $1.to_sym
   end
   def create_rules
-    
+    rules = @grammar_text.scan( /(\A|\s+)rule\s+(\w+)\s+(.*?)\s+endrule/m )
+    rules.each do |r|
+      name = r[1]
+      text = r[2]
+      register_rule(Rule.new(name, text))
+    end
   end
-  
+  def register_rule(rule)
+    if !registered?(rule)
+      @grammar[rule.name] = rule
+    else
+      puts "Rule name conflict: #{rule.name}"
+    end
+  end
+  def registered?(rule)
+    @grammar[rule.name]
+  end
 end
 
 class Parser
