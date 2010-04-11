@@ -126,12 +126,43 @@ end
 class Matcher
   attr_accessor :text, :type
   def initialize(text, type)
+    @text = text
+    @type = type
   end
+  def match?
+    #TODO
+  end
+
+  def backtrack; $current_index -= 1 end #TODO This may need looking into/solution VS node.backtrack
+  def to_s; "Matcher: #{@text},\t#{@type}" end
+  def to_extended; to_s end
 end
   
 class GrammarGenerator
-  attr_accessor :filename, :grammartext, :grammar, :name
+  attr_accessor :filename, :grammar_text, :grammar, :name, :start_symbol
   def initialize(filename)
+    @filename = filename
+    read_grammar_file
+    @grammar = {}
+    create_grammar
+  end
+  def read_grammar_file
+    File.open(@filename) do |f|
+      f.read.match(/grammar\s+(\w+)\s+(.*?)endgrammar/m)
+      @name = $1
+      @grammar_text = $2
+    end
+  end
+  def create_grammar
+    identify_start_symbol
+    create_rules
+  end
+  def identify_start_symbol
+    @grammar_text.match( /start_symbol :(\w+)/ )
+    @start_symbol = $1.to_sym
+  end
+  def create_rules
+    
   end
   
 end
@@ -177,7 +208,7 @@ class Parser
     @tokens = lex.token_list
   end
   def parse
-    result = match?(start_symbol)
+    result = match?(@grammar.start_symbol)
     if result.parse_error?
       puts "Parse error: #{result}"
       exit(0) #TODO find a proper, in-module way to do this
@@ -202,7 +233,7 @@ class Parser
     grammar_rules.each do |g|
       puts g.to_extended
     end
-    puts "Start Symbol: #{start_symbol}"
+    puts "Start Symbol: #{@grammar.start_symbol}"
   end#may need more specificity depending on what a hash.to_s is
   def match?
     #TODO
@@ -214,7 +245,6 @@ class Parser
   def cmd_line_output?;       @options[:stdout]       end
   def overwrite_output?;      options[:overwrite]     end
   def premade_token_stream?;  @options[:from_tokens]  end
-  def start_symbol;           grammar_rules[:start_symbol].to_s     end
   def emit_after_create?;     @options[:full] || @options[:stdout]  end
 end
 
