@@ -109,19 +109,30 @@ class Production
     @subproductions = []
     create_subproductions
   end
-  
   def create_subproductions
     until @text.empty? : @subproductions << subproduce_next_metasymbol end
   end
   def subproduce_next_metasymbol
-    type = nil
+    m_type = nil
     case @text
-      when /\A"(.*?)"/ : type = :literal
-      when /\A([a-z]\w*)/ : type = :type
-      when /\A([A-Z]\w*)/ : type = :metasymbol
-      when /\A(\[.*?\])/ : type = :optional
-      when /\A(\{.*?\})/ : type = :repeating
-      when /\A(\(.*?\))/ : type = :choice
+      when /\A"(.*?)"/ : m_type= :literal
+      when /\A([a-z]\w*)/ : m_type = :type
+      when /\A([A-Z]\w*)/ : m_type = :metasymbol
+      when /\A(\[.*?\])/ : m_type = :optional
+      when /\A(\{.*?\})/ : m_type = :repeating
+      when /\A(\(.*?\))/ : m_type = :choice #Perhaps should be multiline (should all be?)
+      else
+        puts "FATAL ERROR IN METASYMBOL ANALYSIS: #{@text}"
+    end
+    sub_text = $1
+    @text = @text[(sub_text.length + ((m_type == :literal)? 2 : 0))..-1].strip
+    create_matcher(sub_text, m_type)
+  end
+  def create_matcher(text, type)
+    if [:optional, :repeating, :choice].include? type
+      Rule.new("anonymous", text)
+    else
+      Matcher.new(text, type)
     end
   end
   def to_s
