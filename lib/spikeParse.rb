@@ -77,6 +77,14 @@ class Rule
     @productions = []
     create_productions
   end
+  def to_s
+    "Rule: #{@name}, #{@productions.size} top level productions"
+  end
+  def to_ruletext
+    str = to_s
+    @productions.each{|p| str << "\n\t#{p.to_extended}"}
+    str
+  end
   def create_productions
     identify_productions.each{|p| add_production(p)}
   end
@@ -106,6 +114,15 @@ class Production
   attr_accessor :text, :subproductions, :type
   def initialize(text)
   end
+  
+  def to_s
+    "Production: #{@text}, #{@type}, #{@subproductions.size} subproductions"
+  end
+  def to_extended
+    str = to_s
+    @subproductions.each{|s| str << "\n#{s.to_extended}"}
+    str
+  end
 
 end
 
@@ -123,7 +140,7 @@ class GrammarGenerator
 end
 
 class Parser
-  attr_accessor :filename, :options, :grammar_rules, :tree, :tokens
+  attr_accessor :filename, :options, :grammar, :tree, :tokens
   def initialize(filename, opts = {})
     @options = opts
     @filename = filename
@@ -137,8 +154,7 @@ class Parser
   end
   
   def load_grammar_rules
-    g = GrammarGenerator.new(@options[:grammar_file])
-    @grammar_rules = g.grammar #a hash
+    @grammar = GrammarGenerator.new(@options[:grammar_file])
   end
   def load_token_steam
     (premade_token_stream?)? load_textfile_tokens : load_simplex_tokens
@@ -185,18 +201,25 @@ class Parser
       end
     end
   end
+  def print_grammar
+    puts "Grammar: #{@grammar.name}"
+    grammar_rules.each do |g|
+      puts g.to_extended
+    end
+    puts "Start Symbol: #{start_symbol}"
+  end#may need more specificity depending on what a hash.to_s is
   def match?
     #TODO
   end
   
+  def grammar_rules; @grammar.grammar end
   def parse_after_create?; @options[:full] end
   def cmd_line_output?; @options[:stdout] end
   def file_output?; @options[:file] end
   def emit_after_create?; @options[:full] || @options[:stdout] end
   def premade_token_stream?; @options[:from_tokens] end
-  def print_grammar; puts @grammar_rules end#may need more specificity depending on what a hash.to_s is
   def overwrite_output?; options[:overwrite] end
-  def start_symbol; @grammar_rules[:start_symbol].to_s end
+  def start_symbol; grammar_rules[:start_symbol].to_s end
 end
 
 if $0 == __FILE__
