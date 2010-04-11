@@ -33,15 +33,9 @@ end
 
 class Tree
   attr_accessor :root
-  def initialize(node = nil)
-    @root = node
-  end
-  def print
-    puts stringify
-  end
-  def stringify
-    @root.tree_stringify
-  end
+  def initialize(node = nil); @root = node          end
+  def print;                  puts stringify        end
+  def stringify;              @root.tree_stringify  end
 end
 
 class Node
@@ -50,11 +44,6 @@ class Node
     @content = content
     @parent = parent
     @children = children
-  end
-
-  def parse_error?; @content =~ /ERROR/ end #TODO this is mostly fake :)
-  def to_s #to_s is the single node version, it doesn't recurse on children
-    "Node: #{@content.to_s}"
   end
   def tree_stringify(level = 0)
     str = ""
@@ -67,6 +56,9 @@ class Node
     @content.backtrack #TODO leave only if content itself is an object that implements backtrack
     @children.each{|c| c.backtrack}
   end
+
+  def to_s; "Node: #{@content.to_s}" end
+  def parse_error?; @content =~ /ERROR/ end #TODO this is mostly fake :)
 end
 
 class Rule
@@ -113,17 +105,33 @@ end
 class Production
   attr_accessor :text, :subproductions, :type
   def initialize(text)
+    @text = text.strip
+    @subproductions = []
+    create_subproductions
   end
   
+  def create_subproductions
+    until @text.empty? : @subproductions << subproduce_next_metasymbol end
+  end
+  def subproduce_next_metasymbol
+    type = nil
+    case @text
+      when /\A"(.*?)"/ : type = :literal
+      when /\A([a-z]\w*)/ : type = :type
+      when /\A([A-Z]\w*)/ : type = :metasymbol
+      when /\A(\[.*?\])/ : type = :optional
+      when /\A(\{.*?\})/ : type = :repeating
+      when /\A(\(.*?\))/ : type = :choice
+    end
+  end
   def to_s
     "Production: #{@text}, #{@type}, #{@subproductions.size} subproductions"
   end
   def to_extended
     str = to_s
-    @subproductions.each{|s| str << "\n#{s.to_extended}"}
+    @subproductions.each{|s| str << "\n\t\t#{s.to_extended}"}
     str
   end
-
 end
 
 class Matcher
@@ -152,7 +160,6 @@ class Parser
     parse if parse_after_create?
     emit_tree if emit_after_create? #TODO can't have a tree without parsing, so this could be inside the prev if
   end
-  
   def load_grammar_rules
     @grammar = GrammarGenerator.new(@options[:grammar_file])
   end
