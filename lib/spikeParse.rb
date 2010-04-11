@@ -57,7 +57,7 @@ class Node
     str = ""
     level.times{str << "|\t"}
     str << to_s
-    @children.each{|c| str << "\n#{c.tree_stringify}"
+    @children.each{|c| str << "\n#{c.tree_stringify}"}
     str
   end
   def backtrack
