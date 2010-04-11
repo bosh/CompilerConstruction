@@ -1,35 +1,8 @@
 require 'simpLex'
+require 'string_helper'
 $current_index = 0
 $debug = true #TODO delete for production
-def debug?; $debug end
-class String #TODO make a helper and require it
-  def wrapped?(open, close = open) #delimiters, currently only single-character valid
-    self[0,1] == open && self[-1,1] == close
-  end
-  def quoted?(style = :both)
-    if wrapped?("'") || wrapped?('"')
-      if style == :single
-        self[0,1] == "'"
-      elsif style == :double
-        self[0,1] == '"'
-      else #both or an unrecognized, which defaults to both
-        self[0,1] == '"' || self[0,1] == "'"
-      end
-    else
-      false
-    end
-  end
-  def dequote!
-    replace(dequote)
-  end
-  def dequote #and strip. TODO: it may actually be poor form to _include_ the quoted check
-    if self.quoted?
-      return self[1...-1].strip
-    else
-      return self #TODO or should this be a false/nil/error?
-    end
-  end
-end 
+def debug?; $debug end 
 
 class Tree
   attr_accessor :root
@@ -235,14 +208,14 @@ class Parser
     #TODO
   end
   
-  def grammar_rules; @grammar.grammar end
-  def parse_after_create?; @options[:full] end
-  def cmd_line_output?; @options[:stdout] end
-  def file_output?; @options[:file] end
-  def emit_after_create?; @options[:full] || @options[:stdout] end
-  def premade_token_stream?; @options[:from_tokens] end
-  def overwrite_output?; options[:overwrite] end
-  def start_symbol; grammar_rules[:start_symbol].to_s end
+  def parse_after_create?;    @options[:full]         end
+  def file_output?;           @options[:file]         end
+  def grammar_rules;          @grammar.grammar        end
+  def cmd_line_output?;       @options[:stdout]       end
+  def overwrite_output?;      options[:overwrite]     end
+  def premade_token_stream?;  @options[:from_tokens]  end
+  def start_symbol;           grammar_rules[:start_symbol].to_s     end
+  def emit_after_create?;     @options[:full] || @options[:stdout]  end
 end
 
 if $0 == __FILE__
