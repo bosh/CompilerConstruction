@@ -57,7 +57,7 @@ class Rule
   def identify_productions
     prods = []
     if @text.wrapped?("(", ")") #Major limitation, there may not be different option sets in a rule at the same level/depth
-      subproductions_from_text.each{|p| prods << p}
+      choice_productions.each{|p| prods << p}
     elsif @text.wrapped?("{", "}") #Major limitation again, no starting and ending with different option blocks
       @type = :repeating
       prods << @text[1...-1].strip
@@ -67,8 +67,8 @@ class Rule
     end
     prods
   end
-  def subproductions_from_text
-    subs = @text.dequote
+  def choice_productions
+    subs = @text[1...-1].strip
     subs.gsub!("/", "//") #Major limitation, in that rules with /'s cannot have literal /'s
     subs.scan(/(\A|\/)(.*?)(\z|\/)/m).map{|i| i[1]}
   end
