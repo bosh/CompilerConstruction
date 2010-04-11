@@ -43,15 +43,26 @@ end
 
 class Node
   attr_accessor :children, :parent, :content
-  def initialize(content, parent = nil)
+  def initialize(content, parent = nil, children = [])
+    @content = content
+    @parent = parent
+    @children = children
   end
 
   def parse_error?; @content =~ /ERROR/ end #TODO this is mostly fake :)
   def to_s #to_s is the single node version, it doesn't recurse on children
-    #TODO
+    "Node: #{@content.to_s}"
   end
-  def tree_stringify
-    #TODO
+  def tree_stringify(level = 0)
+    str = ""
+    level.times{str << "|\t"}
+    str << to_s
+    @children.each{|c| str << "\n#{c.tree_stringify}"
+    str
+  end
+  def backtrack
+    @content.backtrack #TODO leave only if content itself is an object that implements backtrack
+    @children.each{|c| c.backtrack}
   end
 end
 
