@@ -44,9 +44,9 @@ class Rule
     create_productions
   end
   def to_s
-    "Rule: #{@name}, #{@productions.size} top level productions"
+    "Rule: #{@name}, #{@type}, #{@productions.size} top level productions"
   end
-  def to_ruletext
+  def to_extended
     str = to_s
     @productions.each{|p| str << "\n\t#{p.to_extended}"}
     str
@@ -64,6 +64,8 @@ class Rule
     elsif @text.wrapped?("[", "]") #Major limitation again, no starting and ending with different option blocks
       @type = :optional
       prods << @text[1...-1].strip
+    else
+      prods << @text
     end
     prods
   end
@@ -114,7 +116,7 @@ class Production
     end
   end
   def to_s
-    "Production: #{@text}, #{@type}, #{@subproductions.size} subproductions"
+    "Subproduction: #{@subproductions.size} submatchers"
   end
   def to_extended
     str = to_s
@@ -166,10 +168,11 @@ class GrammarGenerator
     rules.each do |r|
       name = r[1]
       text = r[2]
-      register_rule(Rule.new(name, text))
+      register_rule(name, text)
     end
   end
-  def register_rule(rule)
+  def register_rule(name, text)
+    rule = Rule.new(name, text)
     if !registered?(rule)
       @grammar[rule.name] = rule
     else
@@ -244,9 +247,7 @@ class Parser
   end
   def print_grammar
     puts "Grammar: #{@grammar.name}"
-    grammar_rules.each do |g|
-      puts g.to_extended
-    end
+    grammar_rules.each{|g| puts g[1].to_extended}
     puts "Start Symbol: #{@grammar.start_symbol}"
   end#may need more specificity depending on what a hash.to_s is
   def match?
