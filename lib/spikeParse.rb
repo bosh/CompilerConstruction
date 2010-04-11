@@ -74,10 +74,10 @@ class Rule
   def initialize(name, text)
     @name = name.strip
     @text = text.strip
+    @productions = []
     create_productions
   end
   def create_productions
-    @productions = [] #Clears productions
     identify_productions.each{|p| add_production(p)}
   end
   def identify_productions
