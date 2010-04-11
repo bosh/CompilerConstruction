@@ -3,8 +3,11 @@ $current_index = 0
 $debug = true #TODO delete for production
 def debug?; $debug end
 class String #TODO make a helper and require it
+  def wrapped?(open, close = open) #delimiters, currently only single-character valid
+    self[0,1] == open && self[-1,1] == close
+  end
   def quoted?(style = :both)
-    if self[0,1] == self[-1,1]
+    if wrapped?("'") || wrapped?('"')
       if style == :single
         self[0,1] == "'"
       elsif style == :double
@@ -69,8 +72,34 @@ end
 class Rule
   attr_accessor :name, :text, :productions
   def initialize(name, text)
+    @name = name.strip
+    @text = text.strip
+    create_productions
   end
-
+  def create_productions
+    @productions = [] #Clears productions
+    identify_productions.each{|p| add_production(p)}
+  end
+  def identify_productions
+    prods = []
+    if @text.wrapped?("(", ")") #Major limitation, there may not be different option sets in a rule at the same level/depth
+      subproductions_from_text.each{|p| prods << p}
+    else
+      prods << @text
+    end
+    prods
+  end
+  def subproductions_from_text
+    subs = @text.dequote
+    subs.gsub!("/", "//") #Major limitation, in that rules with /'s cannot have literal /'s
+    subs.scan(/(\A|\/)(.*?)(\z|\/)/m).map{|i| i[1]}
+  end
+  def add_production(text)
+    @productions << Production.new(text)
+  end
+  def match?
+    #TODO
+  end
 end
 
 class Production
