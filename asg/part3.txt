@@ -1,0 +1,114 @@
+Semantic Analysis and Intermediate Code Generation
+
+This part of the project consists of two tasks. The first is
+a simplified  semantic analysis phase. The second is an
+intermediate code generator. For both, you will just need to
+continue on the parser file you have built in the previous
+part of this project.
+
+Semantic Analysis
+
+In that part we need to check on two things.
+
+    * Any used variable must have been declared first.
+    * Catch multiple declarations of the same variable
+    within the same scope.
+
+Your compiler must output error messages for each error
+encountered specifying the type of error (no need to mention
+location information such as line number).
+
+You can implement that part of the semantic analysis in one
+of two ways.
+
+    * Write a separate phase (function/procedure/method)
+    that parses the previously generated AST and add extra
+    information to its nodes (such as type, scope [global
+    and local], etc).
+    * Using sematic actions in your current yacc/bison file.
+
+Here is a suggestion on how to do it. However, feel free to
+implement it in any other way you like.
+
+Setup a table (symbol table) where each entry contains two
+pieces of information: the lexeme, and the scope. The scope
+indicates either global, or the procedure in which the
+variable was declared. Whenever you encounter a variable
+declaration, add an entry to a table. If the table has
+already an entry, then generate a multiple declaration
+error. If you are using syntax tree (i.e. building on the
+previous part of the project) then add to the node
+representing the variable a link to the table entry. This
+link can be a pointer to the entry in the table, or simply
+an index to the table entry. Whenever a variable is used,
+check the symbol table for that variable. If there is no
+entry, then you must generate an error for undeclared
+variable.
+
+We will test this part of your project with a program that
+contains only semantic errors indicated above (i.e. no
+syntactic or lexical errors).
+
+=====
+
+Intermediate Code Generation
+
+In that part you are required to generate three-address
+code, represented as quadruples (as specified in the Dragon
+book).
+
+The three-address code language consists of items of the
+following forms:
+
+x := y binop z where binop is one of: +, -, *, /, and, or
+
+x := unop y where unop is one of: -, not
+
+x := y
+
+L: where L is a label
+
+goto L
+
+if x relop y goto L where relop is one of <,<=,=,>=,>,<>
+
+param x precedes call operation, passing a parameter.
+NOTE: these operations should be issued in left-to-right order.
+
+call p procedure call, no return value
+
+x := funcall f function call, x is assigned the value returned by f
+
+return procedure return
+
+funreturn x function return, returning x
+
+x := y[i] In this case, y[i] refers to the ith element of
+array y, and is independent
+
+of the size of the elements. Assembly-code generation, the
+next phase, will convert this to a size-dependent array
+reference.
+
+x[i] := y
+
+x := y.b This is a reference to the b field of record y.
+Note that the b field of y may itself be a record, in which
+case x.c might appear subsequently in the code. Similarly,
+if y.b is an array, x[i] can appear subsequently.
+
+x.z := y
+
+Note that each of the variables x, y, and z, can correspond
+to either variables in the source program (in particular,
+local variables of a procedure, formal parameters of a
+procedure, or global variables in the program), or temporary
+variables created by the intermediate code generator.
+
+We will be testing that part with an error free program.
+What you have to submit
+    * All source files for lex/flex, yacc/bison,
+      and any external source code.
+    * The output from lex/flex and yacc/bison
+    * Readme indicating how to run your program and the
+      tools you have used as well as their version
