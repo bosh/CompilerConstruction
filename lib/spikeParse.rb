@@ -29,7 +29,10 @@ class Node
     @content.backtrack #TODO leave only if content itself is an object that implements backtrack
     @children.each{|c| c.backtrack}
   end
-
+  def valid?    
+    #TODO
+  end
+  
   def to_s; "Node: #{@content.to_s}" end
   def parse_error?; @content =~ /ERROR/ end #TODO this is mostly fake :)
 end
@@ -192,10 +195,34 @@ class Matcher
     @type = type
   end
   def match?(tokenstream)
-    #TODO
+    token = tokenstream[$current_index]
+    if @type == :literal
+      if @text == token.value;
+        advance!
+        Node.new(token)
+      else
+        matcher_unsuccessful(:literal_mismatch)
+      end
+    elsif @type == :type
+      if @text.downcase == token.type.downcase #NOTE case insensitive
+        advance!
+        Node.new(token)
+      else
+        matcher_unsuccessful(:type_mismatch)
+      end
+    elsif @type == :metasymbol
+      rule = $parser.grammar.grammar[text]
+      result = rule.match?(tokenstream)
+      if result.valid?
+        result #should already be a node
+      else
+        matcher_unsuccessful(:subrule_mismatch)
+      end
+    end
   end
 
-  def backtrack; $current_index -= 1 end #TODO This may need looking into/solution VS node.backtrack
+  def advance!; $current_index += 1 end
+  def backtrack!; $current_index -= 1 end
   def to_s; "Matcher: #{@text},\t#{@type}" end
   def to_extended; to_s end
 end
