@@ -78,7 +78,35 @@ class Rule
     @productions << Production.new(text)
   end
   def match?(tokenstream)
-    #Hardest part!
+    match = nil
+    if @type == :basic
+      if @productions.size > 1 #it's a choice rule
+        @productions.each do |p|
+          match = p.match?(tokenstream)
+          break if match.valid? #else reset counters/backtrack
+        end
+      else #it's a single production rule
+        match = @productions.first.match?(tokenstream)
+      end
+    elsif @type == :repeating
+      reps = []
+      until match && !match.valid?
+        reps << match if match #save off a valid match (ie it wont on the nil case)
+        match = @productions.first.match?(tokenstream)
+      end
+      match.backtrack #it needs to backtrack on the last (first failing) match
+      combine_repeating(reps) #takes array, returns node
+    elsif @type == :optional
+      match = @productions.first.match?(tokenstream)
+      unless match.valid?
+        match.backtrack
+        match = empty_match
+      end
+    else
+      puts "Rule type #{@type} was not recognized. Terminating simParse"
+      exit(0)
+    end
+    match #return
   end
 end
 
