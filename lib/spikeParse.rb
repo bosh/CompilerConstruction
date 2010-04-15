@@ -83,10 +83,14 @@ class Rule
       if @productions.size > 1 #it's a choice rule
         @productions.each do |p|
           match = p.match?(tokenstream)
-          break if match.valid? #else reset counters/backtrack
+          if match.valid? : break end
         end
       else #it's a single production rule
         match = @productions.first.match?(tokenstream)
+      end
+      if !match.valid?
+        match.backtrack
+        match = rule_unsuccessful
       end
     elsif @type == :repeating
       reps = []
@@ -95,18 +99,31 @@ class Rule
         match = @productions.first.match?(tokenstream)
       end
       match.backtrack #it needs to backtrack on the last (first failing) match
-      combine_repeating(reps) #takes array, returns node
+      if reps.size > 0
+        match = combine_repeating(reps) #takes array, returns node
+      else
+        match = empty_match #fail case
+      end
     elsif @type == :optional
       match = @productions.first.match?(tokenstream)
       unless match.valid?
         match.backtrack
-        match = empty_match
+        match = empty_match #fail case
       end
     else
       puts "Rule type #{@type} was not recognized. Terminating simParse"
       exit(0)
     end
     match #return
+  end
+  def combine_repeating(matches)
+    #TODO
+  end
+  def empty_match
+    #TODO
+  end
+  def rule_unsuccessful
+    #TODO
   end
 end
 
@@ -143,6 +160,21 @@ class Production
       Matcher.new(text, type)
     end
   end
+  def match?(tokenstream)
+    matches = []
+    @subproductions.each do |s|
+      match = s.match?(tokenstream)
+      if match.valid?
+        matches << match
+      else
+        matches.each{|m| m.backtrack}
+        return production_unsuccessful
+      end
+    end
+  end
+  def production_unsuccessful
+    #TODO
+  end
   def to_s
     "Subproduction: #{@subproductions.size} submatchers"
   end
@@ -159,7 +191,7 @@ class Matcher
     @text = text
     @type = type
   end
-  def match?
+  def match?(tokenstream)
     #TODO
   end
 
