@@ -81,27 +81,36 @@ class Rule
     @productions << Production.new(text)
   end
   def match?(tokenstream)
+    entry_position = $current_index
     match = nil
     if @type == :basic
       if @productions.size > 1 #it's a choice rule
         @productions.each do |p|
           match = p.match?(tokenstream)
-          if match.valid? : break end
+          if match.valid?
+            break
+          else
+            $current_index = entry_position
+          end
         end
       else #it's a single production rule
         match = @productions.first.match?(tokenstream)
       end
       if !match.valid?
-        match.backtrack
+        $current_index = entry_position
         match = rule_unsuccessful
       end
     elsif @type == :repeating
       reps = []
       until match && !match.valid?
-        reps << match if match #save off a valid match (ie it wont on the nil case)
+        entry_position = $current_index
+        if match #so it skips on first runthrough
+          reps << match #save off a valid match (ie it wont on the nil case)
+          entry_position = $current_index
+        end
         match = @productions.first.match?(tokenstream)
       end
-      match.backtrack #it needs to backtrack on the last (first failing) match
+      $current_index = entry_position #takes the entry_position of the last rep
       if reps.size > 0
         match = combine_repeating(reps) #takes array, returns node
       else
@@ -110,7 +119,7 @@ class Rule
     elsif @type == :optional
       match = @productions.first.match?(tokenstream)
       unless match.valid?
-        match.backtrack
+        $current_index = entry_position
         match = empty_match #fail case
       end
     else
