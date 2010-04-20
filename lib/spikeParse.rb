@@ -6,9 +6,10 @@ def debug?; $debug end
 
 class Tree
   attr_accessor :root
-  def initialize(node = nil); @root = node end
+  def initialize(node = nil); @root = node; clean!  end
   def print;                  puts stringify        end
   def stringify;              @root.tree_stringify  end
+  def clean!; @root.clean!                          end
 end
 
 class Node
@@ -25,9 +26,20 @@ class Node
     @children.each{|c| str << "\n#{c.tree_stringify(level+1)}"}
     str
   end
-  def valid?; !(@content =~ /error/i) end
-  def to_s; "Node: #{@content.to_s}" end
-  def parse_error?; @content =~ /fatal/i end
+  def clean!
+    @children.each do |c|
+      c.clean!
+      if c.empty? || (c.rule? && c.children.size == 0)
+        @children.delete(c)
+      end
+    end
+  end
+ 
+  def to_s;   "Node: #{@content.to_s}"    end
+  def rule?;  @content =~ /\ARule: /      end
+  def empty?; @content =~ /\AEmpty match/ end
+  def valid?; !(@content =~ /error/i)     end
+  def parse_error?; @content =~ /fatal/i  end
 end
 
 class Rule
@@ -47,9 +59,7 @@ class Rule
     @productions.each{|p| str << "\n\t#{p.to_extended}"}
     str
   end
-  def create_productions
-    identify_productions.each{|p| add_production(p)}
-  end
+  def create_productions; identify_productions.each{|p| add_production(p)} end
   def identify_productions
     prods = []
     if @text.wrapped?("(", ")") #Major limitation, there may not be different option sets in a rule at the same level/depth
@@ -70,9 +80,7 @@ class Rule
     subs.gsub!("/", "//") #Major limitation, in that rules with /'s cannot have literal /'s
     subs.scan(/(\A|\/)(.*?)(\z|\/)/m).map{|i| i[1]}
   end
-  def add_production(text)
-    @productions << Production.new(text)
-  end
+  def add_production(text); @productions << Production.new(text) end
   def match?(tokenstream)
     puts "starting a match at #{$current_index} :: #{@type}" if debug?
     entry_position = $current_index
@@ -124,17 +132,9 @@ class Rule
     if match.content == "Production" : match.content = "Rule: #{@name}" end
     match #return
   end
-  def combine_repeating(matches)
-    Node.new("Repeater node", nil, matches)
-  end
-  def empty_match
-    puts "empty match"
-    Node.new("Empty match")
-  end
-  def rule_unsuccessful
-    puts "rule unsuccessful"
-    Node.new("Error: Rule unsuccessful")
-  end
+  def combine_repeating(matches); Node.new("Repeater node", nil, matches) end
+  def empty_match; Node.new("Empty match") end
+  def rule_unsuccessful; Node.new("Error: Rule unsuccessful") end
 end
 
 class Production
@@ -180,9 +180,6 @@ class Production
         return production_unsuccessful
       end
     end
-    nodify(matches)
-  end
-  def nodify(matches)
     Node.new("Production", nil, matches)
   end
   def production_unsuccessful
@@ -233,10 +230,10 @@ class Matcher
     end
   end
 
-  def matcher_unsuccessful(how); Node.new("Error: #{how.to_s}") end
+  def to_s;           "Matcher: #{@text},\t#{@type}" end
+  def to_extended;    to_s end
   def advance_index!; puts $current_index; $current_index += 1 end
-  def to_s; "Matcher: #{@text},\t#{@type}" end
-  def to_extended; to_s end
+  def matcher_unsuccessful(how); Node.new("Error: #{how.to_s}") end
 end
   
 class GrammarGenerator
@@ -279,8 +276,8 @@ class GrammarGenerator
     end
   end
   
-  def registered?(rule); @grammar[rule.name] end
-  def start_rule; @grammar[@start_symbol] end
+  def registered?(rule);  @grammar[rule.name]     end
+  def start_rule;         @grammar[@start_symbol] end
 end
 
 class Parser
