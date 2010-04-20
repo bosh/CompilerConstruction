@@ -84,11 +84,9 @@ return procedure return
 funreturn x function return, returning x
 
 x := y[i] In this case, y[i] refers to the ith element of
-array y, and is independent
-
-of the size of the elements. Assembly-code generation, the
-next phase, will convert this to a size-dependent array
-reference.
+array y, and is independent of the size of the elements.
+Assembly-code generation, the next phase, will convert
+this to a size-dependent array reference.
 
 x[i] := y
 
