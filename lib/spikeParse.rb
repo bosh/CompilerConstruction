@@ -25,10 +25,6 @@ class Node
     @children.each{|c| str << "\n#{c.tree_stringify}"}
     str
   end
-  def backtrack
-    @content.backtrack #TODO leave only if content itself is an object that implements backtrack
-    @children.each{|c| c.backtrack}
-  end
   def valid?    
     #TODO
   end
@@ -179,7 +175,6 @@ class Production
       if match.valid?
         matches << match
       else
-        matches.each{|m| m.backtrack}
         return production_unsuccessful
       end
     end
@@ -207,14 +202,14 @@ class Matcher
     token = tokenstream[$current_index]
     if @type == :literal
       if @text == token.value;
-        advance!
+        advance_index!
         Node.new(token)
       else
         matcher_unsuccessful(:literal_mismatch)
       end
     elsif @type == :type
       if @text.downcase == token.type.downcase #NOTE case insensitive
-        advance!
+        advance_index!
         Node.new(token)
       else
         matcher_unsuccessful(:type_mismatch)
@@ -230,8 +225,7 @@ class Matcher
     end
   end
 
-  def advance!; $current_index += 1 end
-  def backtrack!; $current_index -= 1 end
+  def advance_index!; $current_index += 1 end
   def to_s; "Matcher: #{@text},\t#{@type}" end
   def to_extended; to_s end
 end
