@@ -20,7 +20,7 @@ grammar Pseudocal
     IdentifierList ":" Type
   endrule
   rule ProcedureDeclaration
-    "Procedure" id "(" FormalParameterList ")" ";" ( Block / "forward" )
+    "procedure" id "(" FormalParameterList ")" ";" ( Block / "forward" )
   endrule
   rule FunctionDeclaration
     "function" id "(" FormalParameterList ")" ":" ResultType ";" ( Block / "forward" )

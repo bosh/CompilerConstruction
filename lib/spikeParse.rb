@@ -6,7 +6,7 @@ def debug?; $debug end
 
 class Tree
   attr_accessor :root
-  def initialize(node = nil); @root = node          end
+  def initialize(node = nil); @root = node end
   def print;                  puts stringify        end
   def stringify;              @root.tree_stringify  end
 end
@@ -22,15 +22,12 @@ class Node
     str = ""
     level.times{str << "|\t"}
     str << to_s
-    @children.each{|c| str << "\n#{c.tree_stringify}"}
+    @children.each{|c| str << "\n#{c.tree_stringify(level+1)}"}
     str
   end
-  def valid?    
-    #TODO
-  end
-  
+  def valid?; !(@content =~ /error/i) end
   def to_s; "Node: #{@content.to_s}" end
-  def parse_error?; @content =~ /ERROR/ end #TODO this is mostly fake :)
+  def parse_error?; @content =~ /fatal/i end
 end
 
 class Rule
@@ -77,6 +74,7 @@ class Rule
     @productions << Production.new(text)
   end
   def match?(tokenstream)
+    puts "starting a match at #{$current_index} :: #{@type}" if debug?
     entry_position = $current_index
     match = nil
     if @type == :basic
@@ -122,16 +120,20 @@ class Rule
       puts "Rule type #{@type} was not recognized. Terminating simParse"
       exit(0)
     end
+    puts "closed the match at #{$current_index}" if debug?
+    if match.content == "Production" : match.content = "Rule: #{@name}" end
     match #return
   end
   def combine_repeating(matches)
-    #TODO
+    Node.new("Repeater node", nil, matches)
   end
   def empty_match
-    #TODO
+    puts "empty match"
+    Node.new("Empty match")
   end
   def rule_unsuccessful
-    #TODO
+    puts "rule unsuccessful"
+    Node.new("Error: Rule unsuccessful")
   end
 end
 
@@ -178,9 +180,14 @@ class Production
         return production_unsuccessful
       end
     end
+    nodify(matches)
+  end
+  def nodify(matches)
+    Node.new("Production", nil, matches)
   end
   def production_unsuccessful
-    #TODO
+    puts "production unsuccessful" if debug?
+    Node.new("Fatal error: production unsuccessful")
   end
   def to_s
     "Subproduction: #{@subproductions.size} submatchers"
@@ -216,6 +223,7 @@ class Matcher
       end
     elsif @type == :metasymbol
       rule = $parser.grammar.grammar[text]
+      puts "recurse to #{rule.name}" if debug?
       result = rule.match?(tokenstream)
       if result.valid?
         result #should already be a node
@@ -225,7 +233,8 @@ class Matcher
     end
   end
 
-  def advance_index!; $current_index += 1 end
+  def matcher_unsuccessful(how); Node.new("Error: #{how.to_s}") end
+  def advance_index!; puts $current_index; $current_index += 1 end
   def to_s; "Matcher: #{@text},\t#{@type}" end
   def to_extended; to_s end
 end
