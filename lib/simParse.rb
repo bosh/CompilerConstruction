@@ -232,7 +232,7 @@ class Matcher
 
   def to_s;           "Matcher: #{@text},\t#{@type}" end
   def to_extended;    to_s end
-  def advance_index!; puts $current_index; $current_index += 1 end
+  def advance_index!; puts $current_index if debug?; $current_index += 1 end
   def matcher_unsuccessful(how); Node.new("Error: #{how.to_s}") end
 end
   
@@ -369,15 +369,14 @@ if $0 == __FILE__
 \nOptions:
 \t[-s|-f]\t- Stdout OR fileout. File out will be _filename_parsed.txt
 \t-o\t- If mode -f, will overwrite any file with the same target name
-\t[-a|-n]\t- Full run OR no run. No run is default\n
-\t\t(BONUS! -d - Print grammar constructs to the command line...)"
+\t[-a|-n]\t- Full run OR no run. No run is default\n"
   else
     opts = {}
     filename = ARGV.delete_at(0)
     ARGV.each do |arg|
       case arg
         when "-a" : opts[:full]         = true
-        when "-d" : opts[:debug]        = true
+        when "-d" : opts[:debug]        = $debug = true
         when "-f" : opts[:file]         = opts[:full] = true
         #when "-g" : opts[:grammar_file] = filename#.drop_extension.add__grammar.grm #BROKEN
         when "-n" : opts[:full]         = false

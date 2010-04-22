@@ -32,7 +32,7 @@ grammar Pseudocal
     [VariableDeclarations] CompoundStatement
   endrule
   rule CompoundStatement
-    "begin" Statement "end"
+    "begin" StatementSequence "end"
   endrule
   rule StatementSequence
     Statement {";" Statement}
