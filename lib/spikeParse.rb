@@ -362,7 +362,15 @@ end
 
 if $0 == __FILE__
   if ARGV.size == 0 || ARGV.include?("-h") || ARGV.include?("help")
-    puts "EXPLODING BETA MODE OF SUPER AWESOME POWER"
+    puts "Welcome to simParse,
+\ta simple parser for a pascal-variant grammar
+\nsimParse works together with simpLex to analyze and parse your programs.
+\nTo use:\n\truby simParse _filename_ [options]
+\nOptions:
+\t[-s|-f]\t- Stdout OR fileout. File out will be _filename_parsed.txt
+\t-o\t- If mode -f, will overwrite any file with the same target name
+\t[-a|-n]\t- Full run OR no run. No run is default\n
+\t\t(BONUS! -d - Print grammar constructs to the command line...)"
   else
     opts = {}
     filename = ARGV.delete_at(0)
