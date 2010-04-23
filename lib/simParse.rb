@@ -1,6 +1,7 @@
 require 'simpLex'
 require 'string_helper'
 $current_index = 0
+$matchno = 0
 $debug = false #TODO delete for production
 def debug?; $debug end 
 
@@ -82,7 +83,9 @@ class Rule
   end
   def add_production(text); @productions << Production.new(text) end
   def match?(tokenstream)
-    puts "starting a match at #{$current_index} :: #{@type}" if debug?
+    $matchno += 1
+    matchnum = $matchno
+    puts "#{matchnum}  starting a match at #{$current_index} :: #{@type}" if debug?
     entry_position = $current_index
     match = nil
     if @type == :basic
@@ -128,7 +131,7 @@ class Rule
       puts "Rule type #{@type} was not recognized. Terminating simParse"
       exit(0)
     end
-    puts "closed the match at #{$current_index}" if debug?
+    puts "#{matchnum}  closed the match at #{$current_index}" if debug?
     if match.content == "Production" : match.content = "Rule: #{@name}" end
     match #return
   end

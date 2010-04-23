@@ -97,13 +97,13 @@ grammar Pseudocal
     ("*" / "div" / "mod" / "and")
   endrule
   rule Factor
-    (int / str / id ComponentSelection / FunctionReference / "not" Factor / "("Expression")")
+    (int / str / FunctionReference / id ComponentSelection / "not" Factor / "("Expression")")
   endrule
   rule FunctionReference
     id "(" ActualParameterList ")"
   endrule
   rule ComponentSelection
-    [("." id / "[" Expression "]" ) ComponentSelection]
+    [("." id ComponentSelection / "[" Expression "]" ComponentSelection)]
   endrule
   rule ActualParameterList
     [Expression {"," Expression}]

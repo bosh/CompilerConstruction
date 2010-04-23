@@ -32,7 +32,7 @@ end;
 function foo3(a : integer) : s;
 begin
 	a := 0
-end
+end;
 
 begin
 	z := foo3(3)
