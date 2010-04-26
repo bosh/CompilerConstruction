@@ -23,7 +23,7 @@ grammar Pseudocal
     "procedure" id "(" FormalParameterList ")" ";" ( Block / "forward" )
   endrule
   rule FunctionDeclaration
-    "function" id "(" FormalParameterList ")" ":" ResultType ";" ( Block / "forward" )
+    "function" id "(" FormalParameterList ")" ":" Type ";" ( Block / "forward" )
   endrule
   rule FormalParameterList
     [IdentifierList ":" Type {";" IdentifierList ":" Type}]
@@ -38,7 +38,7 @@ grammar Pseudocal
     Statement {";" Statement}
   endrule
   rule Statement
-    (SimpleStatement / StructuredStatement)
+    (StructuredStatement / SimpleStatement)
   endrule
   rule SimpleStatement
     [id (AssignmentStatement / ProcedureStatement)]
@@ -53,10 +53,10 @@ grammar Pseudocal
     (MatchedStatement / OpenStatement)
   endrule
   rule MatchedStatement
-    ("if" Expression "then" MatchedStatement "else" MatchedStatement
+    ("if" Expression "then" Statement "else" Statement
     / CompoundStatement
-    / "while" Expression "do" MatchedStatement
-    / "for" id ":=" Expression "to" Expression "do" MatchedStatement
+    / "while" Expression "do" Statement
+    / "for" id ":=" Expression "to" Expression "do" Statement
     )
   endrule
   rule OpenStatement
@@ -68,9 +68,6 @@ grammar Pseudocal
   endrule
   rule Type
     (id / "array" "[" Constant ".." Constant "]" "of" Type / "record" FieldList "end")
-  endrule
-  rule ResultType
-    id
   endrule
   rule FieldList
     [IdentifierList ":" Type {";" IdentifierList ":" Type}]
