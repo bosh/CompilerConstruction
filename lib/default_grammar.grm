@@ -26,7 +26,7 @@ grammar Pseudocal
     "function" id "(" FormalParameterList ")" ":" Type ";" ( Block / "forward" )
   endrule
   rule FormalParameterList
-    [IdentifierList ":" Type {";" IdentifierList ":" Type}]
+    [VariableDeclaration {";" VariableDeclaration}]
   endrule
   rule Block
     [VariableDeclarations] CompoundStatement
@@ -41,13 +41,13 @@ grammar Pseudocal
     (StructuredStatement / SimpleStatement)
   endrule
   rule SimpleStatement
-    [id (AssignmentStatement / ProcedureStatement)]
+    [(AssignmentStatement / ProcedureStatement)]
   endrule
   rule AssignmentStatement 
-    ComponentSelection ":=" Expression
+    id ComponentSelection ":=" Expression
   endrule
   rule ProcedureStatement
-    "(" ActualParameterList ")"
+    id "(" ActualParameterList ")"
   endrule
   rule StructuredStatement
     (MatchedStatement / OpenStatement)
@@ -67,10 +67,7 @@ grammar Pseudocal
     )
   endrule
   rule Type
-    (id / "array" "[" Constant ".." Constant "]" "of" Type / "record" FieldList "end")
-  endrule
-  rule FieldList
-    [IdentifierList ":" Type {";" IdentifierList ":" Type}]
+    (id / "array" "[" Constant ".." Constant "]" "of" Type / "record" FormalParameterList "end")
   endrule
   rule Constant
     [Sign] int
@@ -79,7 +76,7 @@ grammar Pseudocal
     SimpleExpression [RelationalOp SimpleExpression]
   endrule
   rule RelationalOp
-    ("=" / "<" / "<=" / ">" / ">=" / "<>" / "=")
+    ("<" / "<=" / ">" / ">=" / "<>" / "=")
   endrule
   rule SimpleExpression
     [Sign] Term {AddOp Term}
@@ -94,7 +91,7 @@ grammar Pseudocal
     ("*" / "div" / "mod" / "and")
   endrule
   rule Factor
-    (int / str / FunctionReference / id ComponentSelection / "not" Factor / "("Expression")")
+    (int / str / FunctionReference / id ComponentSelection / "not" Factor / "(" Expression ")" )
   endrule
   rule FunctionReference
     id "(" ActualParameterList ")"
