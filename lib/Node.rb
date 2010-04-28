@@ -29,9 +29,9 @@ class Node
     @children = replacements
   end
   
-  def create_symbol_table(table = {})
-    if is_rule?($parser.grammar.start_symbol)
-      table[:scope_name] = "Global" #This explicitly bans the use of a variable named scope_name in programs
+  def create_symbol_table(table = nil)
+    if is_rule?($parser.grammar.start_symbol) #TODO dont like the global here
+      table = SymbolTable.new("Global")
     end
     @children.each do |c|
       internal = c.create_symbol_table(table)
