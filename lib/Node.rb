@@ -18,7 +18,7 @@ class Node
       if c.class == Array; puts c; exit(0) end
       if c.empty?
         next
-      elsif c.production? || c.anonymous_rule?
+      elsif c.production? || c.anonymous_rule? || c.repeater_node?
         c.clean!
         replacements += c.children
       else
@@ -29,21 +29,22 @@ class Node
     @children = replacements
   end
   
-  def create_symbol_table
-    table = {}
-    #before_recurse
+  def create_symbol_table(table = {})
+    if is_rule?($parser.grammar.start_symbol)
+      table[:scope_name] = "Global" #This explicitly bans the use of a variable named scope_name in programs
+    end
     @children.each do |c|
-      internal = c.create_symbol_table
+      internal = c.create_symbol_table(table)
       table[internal.name] = internal
     end
     #after_recurse
-    table
   end
  
   def to_s;   "#{@content.to_s}"    end
   def rule?;  @content =~ /\ARule:/      end
   def is_rule?(name);  @content =~ /\ARule: (.*)/; rule? && $1.strip == name  end
   def anonymous_rule?;  @content =~ /\ARule: anonymous\z/      end
+  def repeater_node?;  @content =~ /\ARepeater node\z/      end
   def production?;  @content =~ /\AProduction\z/      end
   def empty?; @content =~ /\AEmpty match/ end
   def valid?; !(@content =~ /error/i)     end
