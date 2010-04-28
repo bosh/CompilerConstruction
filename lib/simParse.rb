@@ -30,7 +30,7 @@ if $0 == __FILE__
         puts "Unrecognized option: '#{arg}'. Attempting run anyway."
       end
     end
-    opts[:grammar_file] ||= "simParse_grammar.grm"
+    opts[:grammar_file] ||= "default_grammar.grm"
     $parser = Parser.new(filename, opts)
     $parser.after_create
   end
