@@ -42,6 +42,7 @@ class Node
  
   def to_s;   "#{@content.to_s}"    end
   def rule?;  @content =~ /\ARule:/      end
+  def is_rule?(name);  @content =~ /\ARule: (.*)/; rule? && $1.strip == name  end
   def anonymous_rule?;  @content =~ /\ARule: anonymous\z/      end
   def production?;  @content =~ /\AProduction\z/      end
   def empty?; @content =~ /\AEmpty match/ end
