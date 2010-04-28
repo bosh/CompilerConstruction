@@ -13,13 +13,22 @@ class Node
     str
   end
   def clean!
-    #before_clean
-    @children.each do |c|
-      c.clean!
-      #internal_clean
+    replacements = []
+    @children.each do |c| #kills empties and anons/productions
+      if c.class == Array; puts c; exit(0) end
+      if c.empty?
+        next
+      elsif c.production? || c.anonymous_rule?
+        c.clean!
+        replacements += c.children
+      else
+        c.clean!
+        replacements << c
+      end
     end
-    #after_clean
+    @children = replacements
   end
+  
   def create_symbol_table
     table = {}
     #before_recurse

@@ -46,6 +46,7 @@ class Parser
       exit(0) #TODO find a proper, in-module way to do this
     else
       @tree = Tree.new(result)
+      @tree.clean!
     end
   end
   def match?(start)
