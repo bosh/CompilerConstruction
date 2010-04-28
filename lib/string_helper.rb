@@ -18,7 +18,7 @@ class String
   def dequote!
     replace(dequote)
   end
-  def dequote #and strip. TODO: it may actually be poor form to _include_ the quoted check
+  def dequote #and strip
     if self.quoted?
       return self[1...-1].strip
     else

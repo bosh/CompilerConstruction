@@ -1,4 +1,4 @@
-require 'simpLex'
+require 'Core'
 $current_index = 0
 $matchno = 0
 $debug = false
@@ -26,6 +26,7 @@ if $0 == __FILE__
         when "-n" : opts[:full]         = false
         when "-o" : opts[:overwrite]    = true
         when "-s" : opts[:stdout]       = opts[:full] = true
+        when "-p"  : opts[:post_actions] = true
       else
         puts "Unrecognized option: '#{arg}'. Attempting run anyway."
       end

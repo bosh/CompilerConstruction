@@ -9,7 +9,8 @@ class Parser
   def after_create
     print_grammar if debug?
     parse if parse_after_create?
-    emit_tree if emit_after_create? #TODO can't have a tree without parsing, so this could be inside the prev if
+    emit_tree if emit_after_create?
+    post_actions if post_actions?
   end
   def load_grammar_rules
     @grammar = GrammarGenerator.new(@options[:grammar_file])
@@ -58,7 +59,7 @@ class Parser
       outfile = "#{$1}_parsed.txt"
       if overwrite_output? || !File.exists?(outfile)
         puts "Parse successful! Writing to file #{outfile}."
-        File.new(outfile, 'w') #TODO can i make this one line?
+        File.new(outfile, 'w')
         File.open(outfile, 'a'){|f| f.write(@tree.stringify)}
       end
     end
@@ -67,8 +68,12 @@ class Parser
     puts "Grammar: #{@grammar.name}"
     grammar_rules.each{|g| puts g[1].to_extended}
     puts "Start Symbol: #{@grammar.start_symbol}"
-  end#may need more specificity depending on what a hash.to_s is
+  end
+  def post_actions
+    #TODO
+  end
   
+  def post_actions?;    @options[:post_actions] end
   def parse_after_create?;    @options[:full]         end
   def file_output?;           @options[:file]         end
   def grammar_rules;          @grammar.grammar        end
