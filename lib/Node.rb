@@ -32,12 +32,22 @@ class Node
   def create_symbol_table(table = nil)
     if is_rule?($parser.grammar.start_symbol) #TODO dont like the global here
       table = SymbolTable.new("Global")
+      @children.each{|c| c.create_symbol_table(table)}
+    elsif is_rule?("ProcedureDeclaration")
+      subtable = Table.new(@children[1].contents.value) #@children.select{|n| n.content.class == Token && n.content.value} #returns the value, which is the name
+      @children[3].create_symbol_table(subtable) #@c.select{FormalParamList}
+      @children[6].create_symbol_table(subtable) #@c.select{Block}
+      table.add_subtable(subtable)
+    elsif is_rule?("FunctionDeclaration")
+      subtable = Table.new(@children[1].contents.value)
+      @children[3].create_symbol_table(subtable) #see above
+      @children[8].create_symbol_table(subtable) #see above
+      table.add_subtable(subtable)
+      #may also want to add to the super table "funcname"=>"@children[6]" ie :name=>:type
+    elsif is_rule?("TODO")
+      #add as appropriate to the members list. also what to do for types?
     end
-    @children.each do |c|
-      internal = c.create_symbol_table(table)
-      table[internal.name] = internal
-    end
-    #after_recurse
+    table
   end
  
   def to_s;   "#{@content.to_s}"    end
