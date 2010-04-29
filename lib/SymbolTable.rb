@@ -6,17 +6,16 @@ class SymbolTable
     @subtables = []
   end
   
-  def add_variable(var)
+  def add_variable(var, type = true)
     if already_defined?(var)
-      false #TODO: caller rec's a false, should blow up there. or could blow up here. whichever
+      puts "Error, #{var} already defined in scope #{@scope}"
     else
-      @members[var] = true
-      true
+      @members[var] = type
     end
   end
 
   def add_subtable(sub); @subtables << sub end
-  def already_defined?(var); contains?(var)||global_contains?(var) end #sorta fake
+  def already_defined?(var); contains?(var)end#||global_contains?(var) end #sorta fake
   def global_contains?(var); $parser.symbol_table.contains?(var) end
   def contains?(var); @members[var] end
   def to_s; "#{@scope}: #{@members}\t#{@subtables}"end
