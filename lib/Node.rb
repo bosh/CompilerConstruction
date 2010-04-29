@@ -52,12 +52,6 @@ class Node
       type = type_analyze(@children[2], table)
       idents = @children[0].children.select{|c| c.content.type == "ID"}
       idents.each{|i| table.add_variable(i.content.value, type)} #TODO inline with prev
-    #elsif is_rule?("AssignmentStatement") #TODO This and below are potentials for checking usage
-      #TODO: (from ^): but could probably be factored to just checking that if it's a token with type==id, value is registered in current scope or global
-    #elsif is_rule?("ProcedureStatement")
-      #
-    #elsif is_rule?("MatchedStatement") && @children[0].content.value == "for"
-      #
     elsif @children.size == 0 && @content.type == "ID" && !table.contains?(@content.value)
       puts "ERROR: undeclared variable: #{@content.value}"
     else
@@ -75,6 +69,75 @@ class Node
       "record"# with members:" #TODO oh god this can recurse
     else
       puts "ERROR: Type detector borked"
+    end
+  end
+  def create_three_addr_code
+    if is_rule?("Program")
+      #
+    elsif is_rule?("TypeDefinitions")
+      #
+    elsif is_rule?("VariableDeclarations")
+      #
+    elsif is_rule?("SubprogramDeclarations")
+      #
+    elsif is_rule?("TypeDefinition")
+      #
+    elsif is_rule?("VariableDeclaration")
+      #
+    elsif is_rule?("ProcedureDeclaration")
+      #
+    elsif is_rule?("FunctionDeclaration")
+      #
+    elsif is_rule?("FormalParameterList")
+      #
+    elsif is_rule?("Block")
+      #
+    elsif is_rule?("CompoundStatement")
+      #
+    elsif is_rule?("StatementSequence")
+      #
+    elsif is_rule?("Statement")
+      #
+    elsif is_rule?("SimpleStatement")
+      #
+    elsif is_rule?("AssignmentStatement")
+      #
+    elsif is_rule?("ProcedureStatement")
+      #
+    elsif is_rule?("StructuredStatement")
+      #
+    elsif is_rule?("MatchedStatement")
+      #
+    elsif is_rule?("OpenStatement")
+      #
+    elsif is_rule?("Type")
+      #
+    elsif is_rule?("Constant")
+      #
+    elsif is_rule?("Expression")
+      #
+    elsif is_rule?("RelationalOp")
+      #
+    elsif is_rule?("SimpleExpression")
+      #
+    elsif is_rule?("AddOp")
+      #
+    elsif is_rule?("Term")
+      #
+    elsif is_rule?("MulOp")
+      #
+    elsif is_rule?("Factor")
+      #
+    elsif is_rule?("FunctionReference")
+      #
+    elsif is_rule?("ComponentSelection")
+      #
+    elsif is_rule?("ActualParameterList")
+      #
+    elsif is_rule?("IdentifierList")
+      #
+    elsif is_rule?("Sign")
+      #
     end
   end
 
