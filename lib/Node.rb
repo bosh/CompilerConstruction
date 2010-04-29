@@ -72,40 +72,52 @@ class Node
     end
   end
   def create_three_addr_code
+    code = []
     if is_rule?("Program")
-      #
+      code << "goto #{@children[1].content.value}"
+      (3..(@children.size - 3)).each{|i| code += @children[i].create_three_addr_code}
+      code << "#{@children[1].content.value}"
+      code += @children[@children.size-2].create_three_addr_code
     elsif is_rule?("TypeDefinitions")
-      #
+      @children.select{|c| c.is_rule?("TypeDefinition")}.each{|r| code += r.create_three_addr_code}
     elsif is_rule?("VariableDeclarations")
-      #
+      @children.select{|c| c.is_rule?("VariableDeclaration")}.each{|r| code += r.create_three_addr_code}
     elsif is_rule?("SubprogramDeclarations")
-      #
+      @children.select{|c| c.is_rule?("ProcedureDeclaration") || c.is_rule?("Functioneclaration")}.each{|r| code += r.create_three_addr_code}
     elsif is_rule?("TypeDefinition")
       #
     elsif is_rule?("VariableDeclaration")
       #
     elsif is_rule?("ProcedureDeclaration")
-      #
+      code << "#{@children[1].content.value}"
+      code += @children[3].create_three_addr_code
+      code += @children[6].create_three_addr_code
+      code << "return"
     elsif is_rule?("FunctionDeclaration")
-      #
+      code << "#{@children[1].content.value}"
+      code += @children[3].create_three_addr_code
+      code += @children[8].create_three_addr_code
+      code << "funreturn _something_" #TODO Where?
     elsif is_rule?("FormalParameterList")
-      #
+      @children.select{|c| c.is_rule?("VariableDeclaration")}.each{|r| code += r.create_three_addr_code}
     elsif is_rule?("Block")
-      #
+      @children.select{|c| c.is_rule?("VariableDeclaration")}.each{|r| code += r.create_three_addr_code}
+      @children.select{|c| c.is_rule?("CompoundStatement")}.each{|r| code += r.create_three_addr_code}
     elsif is_rule?("CompoundStatement")
-      #
+      code += @children[1].create_three_addr_code
     elsif is_rule?("StatementSequence")
-      #
+      @children.select{|c| c.is_rule?("Statement")}.each{|r| code += r.create_three_addr_code}
     elsif is_rule?("Statement")
-      #
+      code += @children[0].create_three_addr_code
     elsif is_rule?("SimpleStatement")
-      #
+      code += @children[0].create_three_addr_code unless @children.size == 0
     elsif is_rule?("AssignmentStatement")
       #
     elsif is_rule?("ProcedureStatement")
-      #
+      code += @children[2].create_three_addr_code
+      code << "call #{@children[0].content.value}"
     elsif is_rule?("StructuredStatement")
-      #
+      code += @children[0].create_three_addr_code
     elsif is_rule?("MatchedStatement")
       #
     elsif is_rule?("OpenStatement")
@@ -139,6 +151,7 @@ class Node
     elsif is_rule?("Sign")
       #
     end
+    code
   end
 
   def to_s;   "#{@content.to_s}"    end
