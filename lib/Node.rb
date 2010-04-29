@@ -87,9 +87,9 @@ class Node
     elsif is_rule?("SubprogramDeclarations")
       @children.select{|c| c.is_rule?("ProcedureDeclaration") || c.is_rule?("Functioneclaration")}.each{|r| code += r.create_three_addr_code}
     elsif is_rule?("TypeDefinition")
-      #
+      code << "TODOtypedef"
     elsif is_rule?("VariableDeclaration")
-      #
+      code << "TODOvardec"
     elsif is_rule?("ProcedureDeclaration")
       code << "#{@children[1].content.value}"
       code += @children[3].create_three_addr_code
@@ -125,13 +125,13 @@ class Node
     elsif is_rule?("StructuredStatement")
       code += @children[0].create_three_addr_code
     elsif is_rule?("MatchedStatement")
-      #OHGOD
+      code << "TODOmatchs"
     elsif is_rule?("OpenStatement")
-      #OHGOD
+      code << "TODOopens"
     elsif is_rule?("Type")
-      #do nothing
+      code << "TODOtype"
     elsif is_rule?("Constant")
-      #usually do nothing, maybe save into a var
+      code << "TODOconstant"
     elsif is_rule?("Expression") #comes with a tempname
       if @children.size == 3
         t = new_temp
@@ -143,7 +143,7 @@ class Node
         code += @children[0].create_three_addr_code(tempname)
       end
     elsif is_rule?("RelationalOp")
-      #do nothing
+      code << "TODOrelop"
     elsif is_rule?("SimpleExpression") #comes with a temp
       t = new_temp
       if @children[0].is_rule?("Sign")
@@ -161,7 +161,7 @@ class Node
       end
       code << "#{tempname} := #{t}"
     elsif is_rule?("AddOp")
-      #do nothing
+      code << "TODOaddop"
     elsif is_rule?("Term")
       t = new_temp
       code += @children[0].create_three_addr_code(t)
@@ -174,7 +174,7 @@ class Node
       end
       code << "#{tempname} := #{t}"
     elsif is_rule?("MulOp")
-      #do nothing
+      code << "TODOmulop"
     elsif is_rule?("Factor")
       if @children[0].is_rule?("FunctionReference")
         code += @children[0].create_three_addr_code
@@ -191,6 +191,7 @@ class Node
       code += @children[2].create_three_addr_code
       code << "call #{@children[0].content.value}"
     elsif is_rule?("ComponentSelection")
+      code << "TODOcompsel"
       if !@children.size == 0
         if @children[0].content.value == "." #its opt1
           
@@ -205,9 +206,9 @@ class Node
         code << "param #{t}"
       end
     elsif is_rule?("IdentifierList")
-      #dont do anything
+      code << "TODOidentlist"
     elsif is_rule?("Sign")
-      #dont do anything
+      code << "TODOsign"
     end
     code
   end
