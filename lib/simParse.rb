@@ -26,7 +26,9 @@ if $0 == __FILE__
         when "-n" : opts[:full]         = false
         when "-o" : opts[:overwrite]    = true
         when "-s" : opts[:stdout]       = opts[:full] = true
-        when "-p"  : opts[:post_actions] = true
+        when "-p"  : opts[:post_action_one] = opts[:post_action_two] = true
+        when "-p1"  : opts[:post_action_one] = true
+        when "-p2"  : opts[:post_action_two] = true
       else
         puts "Unrecognized option: '#{arg}'. Attempting run anyway."
       end

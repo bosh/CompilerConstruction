@@ -11,7 +11,8 @@ class Parser
     print_grammar if debug?
     parse if parse_after_create?
     emit_tree if emit_after_create?
-    post_actions if post_actions?
+    table_actions if post_action_one?
+    three_ac_actions if post_action_two?
   end
   def load_grammar_rules
     @grammar = GrammarGenerator.new(@options[:grammar_file])
@@ -71,18 +72,15 @@ class Parser
     grammar_rules.each{|g| puts g[1].to_extended}
     puts "Start Symbol: #{@grammar.start_symbol}"
   end
-  def post_actions
-    generate_symbol_table
-    generate_3ac
-    emit_symbol_table
-    emit_3ac
-  end
-
+  
+  def table_actions; generate_symbol_table; emit_symbol_table end
+  def three_ac_actions; generate_3ac; emit_3ac end
   def generate_symbol_table; @symbol_table = @tree.create_symbol_table end
   def generate_3ac; @three_addr_code = @tree.create_three_addr_code end
   def emit_symbol_table; puts "Symbol Table:"; puts @symbol_table; puts ""end
   def emit_3ac; puts "3AC:"; puts @three_addr_code; puts "" end
-  def post_actions?;    @options[:post_actions] end
+  def post_action_one?;    @options[:post_action_one] end
+  def post_action_two?;    @options[:post_action_two] end
   def parse_after_create?;    @options[:full]         end
   def file_output?;           @options[:file]         end
   def grammar_rules;          @grammar.grammar        end
