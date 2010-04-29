@@ -75,15 +75,14 @@ class Parser
     generate_symbol_table
     generate_3ac
     emit_symbol_table
-    print "\n"
     emit_3ac
   end
   def generate_symbol_table; @symbol_table = @tree.create_symbol_table end
   def generate_3ac
     #TODO
   end
-  def emit_symbol_table; puts "Symbol Table:"; pp @symbol_table end
-  def emit_3ac; puts "3AC:"; pp @three_addr_code end
+  def emit_symbol_table; puts "Symbol Table:"; puts @symbol_table; puts ""end
+  def emit_3ac; puts "3AC:"; puts @three_addr_code; puts "" end
   
   def post_actions?;    @options[:post_actions] end
   def parse_after_create?;    @options[:full]         end
