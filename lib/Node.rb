@@ -79,7 +79,7 @@ class Node
       (3..(@children.size - 3)).each{|i| code += @children[i].create_three_addr_code}
       code << "#{@children[1].content.value}"
       code += @children[@children.size-2].create_three_addr_code
-      code << "\texit"
+      code << "  exit"
     elsif is_rule?("TypeDefinitions")
       @children.select{|c| c.is_rule?("TypeDefinition")}.each{|r| code += r.create_three_addr_code}
     elsif is_rule?("VariableDeclarations")
@@ -87,9 +87,9 @@ class Node
     elsif is_rule?("SubprogramDeclarations")
       @children.select{|c| c.is_rule?("ProcedureDeclaration") || c.is_rule?("Functioneclaration")}.each{|r| code += r.create_three_addr_code}
     elsif is_rule?("TypeDefinition")
-      code << "TODOtypedef"
+      #code << "TODOtypedef"
     elsif is_rule?("VariableDeclaration")
-      code << "TODOvardec"
+      #code << "TODOvardec"
     elsif is_rule?("ProcedureDeclaration")
       code << "#{@children[1].content.value}"
       code += @children[3].create_three_addr_code
@@ -99,7 +99,7 @@ class Node
       code << "#{@children[1].content.value}"
       code += @children[3].create_three_addr_code
       code += @children[8].create_three_addr_code
-      code << "funreturn _something_" #TODO Where?
+      code << "funreturn #{type_analyze(@children[6], nil)}" #TODO incorrect
     elsif is_rule?("FormalParameterList")
       @children.select{|c| c.is_rule?("VariableDeclaration")}.each{|r| code += r.create_three_addr_code}
     elsif is_rule?("Block")
@@ -113,26 +113,73 @@ class Node
       code += @children[0].create_three_addr_code
     elsif is_rule?("SimpleStatement")
       code += @children[0].create_three_addr_code unless @children.size == 0
-    elsif is_rule?("AssignmentStatement") #needs work
+    elsif is_rule?("AssignmentStatement")
       t = new_temp
       @children.select{|c| c.is_rule?("Expression")}.each{|r| code += r.create_three_addr_code(t)}
-      code << "#{tempname} := #{t}"
-      code << "work compselection in somehow"
-      code << "#{@children[0].content.value} := _tempvar_"
+      if @children.size == 4
+        t1 = new_temp
+        code += @children[1].create_three_addr_code(t1)
+        code << "#{@children[0].content.value}[#{t1}]:= #{t}" #TODO Bork
+        else
+        code << "#{@children[0].content.value} := #{t}"
+      end
     elsif is_rule?("ProcedureStatement")
       code += @children[2].create_three_addr_code
       code << "call #{@children[0].content.value}"
     elsif is_rule?("StructuredStatement")
       code += @children[0].create_three_addr_code
     elsif is_rule?("MatchedStatement")
-      code << "TODOmatchs"
+      if @children.size == 6 #if then else
+        statement = new_temp
+        els = new_temp
+        bottom = new_temp
+        t = new_temp
+        code += @children[1].create_three_addr_code(t) 
+        code << "if #{t} goto #{statement}" #true
+        code << "goto #{els}" #false
+        code << "#{statement}"
+        code += @children[3].create_three_addr_code
+        code << "goto #{bottom}"
+        code << "#{els}"
+        code += @children[5].create_three_addr_code
+        code << "#{bottom}"        
+      elsif @children.size == 1 #compound
+        code += @children[0].create_three_addr_code
+      elsif @children.size == 4 #while
+        top = new_temp
+        loop = new_temp
+        bottom = new_temp
+        code << "#{top}"
+        t = new_temp
+        code += @children[1].create_three_addr_code(t) 
+        code << "if #{t} goto #{loop}" #true
+        code << "goto #{bottom}" #false
+        code << "#{loop}"
+        code += @children[3].create_three_addr_code
+        code << "goto #{top}"
+        code << "#{bottom}"
+      else #if @children.size == 8
+        code << "TODO for loop"
+      end
     elsif is_rule?("OpenStatement")
       code << "TODOopens"
     elsif is_rule?("Type")
-      code << "TODOtype"
+      if @children.size == 1
+        code << "#{tempname} := #{@children[0].content.value}___"
+      elsif @children.size == 3
+        code << "record___"
+      elsif @children.size > 3
+        code << "array___"
+      end
     elsif is_rule?("Constant")
-      code << "TODOconstant"
-    elsif is_rule?("Expression") #comes with a tempname
+      if tempname
+        if @children.size == 2
+          code << "#{tempname} := #{@children[0].content.value} #{@children[1].content.value}"
+        else
+          code << "#{tempname} := #{@children[0].content.value}"
+        end
+      end
+    elsif is_rule?("Expression")
       if @children.size == 3
         t = new_temp
         t1 = new_temp
@@ -143,7 +190,7 @@ class Node
         code += @children[0].create_three_addr_code(tempname)
       end
     elsif is_rule?("RelationalOp")
-      code << "TODOrelop"
+      #code << "TODOrelop"
     elsif is_rule?("SimpleExpression") #comes with a temp
       t = new_temp
       if @children[0].is_rule?("Sign")
@@ -161,7 +208,7 @@ class Node
       end
       code << "#{tempname} := #{t}"
     elsif is_rule?("AddOp")
-      code << "TODOaddop"
+      #code << "TODOaddop"
     elsif is_rule?("Term")
       t = new_temp
       code += @children[0].create_three_addr_code(t)
@@ -174,7 +221,7 @@ class Node
       end
       code << "#{tempname} := #{t}"
     elsif is_rule?("MulOp")
-      code << "TODOmulop"
+      #code << "TODOmulop"
     elsif is_rule?("Factor")
       if @children[0].is_rule?("FunctionReference")
         code += @children[0].create_three_addr_code
@@ -191,12 +238,28 @@ class Node
       code += @children[2].create_three_addr_code
       code << "call #{@children[0].content.value}"
     elsif is_rule?("ComponentSelection")
-      code << "TODOcompsel"
       if !@children.size == 0
-        if @children[0].content.value == "." #its opt1
-          
-        else #its opt2
-          
+        if @children[0].content.value == "."
+          if @children.size == 3
+            t = new_temp
+            code += @children[2].create_three_addr_code(t)
+            code << "#{tempname}.#{t}"
+          else
+            code << "#{tempname}.#{@children[1].content.value}"
+          end
+        else
+          t1 = nil
+          if @children.size == 4 #borkborkbork todo
+            t1 = new_temp
+            code += @children[3].create_three_addr_code(t1)
+          end
+          t = new_temp
+          code += @children[1].create_three_addr_code(t)
+          if t1
+            code << "#{tempname} := #{t}[#{t1}]"
+          else
+            code << "#{tempname} := #{t}"
+          end
         end
       end
     elsif is_rule?("ActualParameterList")
@@ -206,9 +269,9 @@ class Node
         code << "param #{t}"
       end
     elsif is_rule?("IdentifierList")
-      code << "TODOidentlist"
+      #code << "TODOidentlist"
     elsif is_rule?("Sign")
-      code << "TODOsign"
+      #code << "TODOsign"
     end
     code
   end
