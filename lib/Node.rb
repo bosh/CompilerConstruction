@@ -44,7 +44,7 @@ class Node
       table.add_subtable(subtable)
       #may also want to add to the super table "funcname"=>"@children[6]" ie :name=>:type
     elsif is_rule?("TypeDefinition")
-      table.add_variable(@children[0].content.value, type_analyze(@children[2], table))
+      table.add_type(@children[0].content.value, type_analyze(@children[2], table))
     elsif is_rule?("VariableDeclaration")
       type = type_analyze(@children[2], table)
       idents = @children[0].children.select{|c| c.content.type == "id"}
@@ -69,10 +69,9 @@ class Node
     elsif first_child.value == "array"
       "array of #{type_analyze(typenode.children[7], table)}"
     elsif first_child.value == "record"
-      "record"
-      #inject into table moar with: create_symbol_table(
+      "record"# with members:" #TODO oh god this can recurse
     else
-      "Type detector borked"
+      "ERROR: Type detector borked"
     end
   end
 
