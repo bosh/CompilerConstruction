@@ -1,4 +1,5 @@
 class Node
+  @@tempcount = 0
   attr_accessor :children, :parent, :content
   def initialize(content, parent = nil, children = [])
     @content = content
@@ -71,7 +72,7 @@ class Node
       puts "ERROR: Type detector borked"
     end
   end
-  def create_three_addr_code
+  def create_three_addr_code(tempname = nil)
     code = []
     if is_rule?("Program")
       code << "goto #{@children[1].content.value}"
@@ -196,4 +197,5 @@ class Node
   def empty?; @content =~ /\AEmpty match/ end
   def valid?; !(@content =~ /error/i)     end
   def parse_error?; @content =~ /fatal/i  end
+  def new_temp; @@tempcount += 1; "t#{@@tempcount}" end
 end
