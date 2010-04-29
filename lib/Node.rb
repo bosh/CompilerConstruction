@@ -15,7 +15,6 @@ class Node
   def clean!
     replacements = []
     @children.each do |c| #kills empties and anons/productions
-      if c.class == Array; puts c; exit(0) end
       if c.empty?
         next
       elsif c.production? || c.anonymous_rule? || c.repeater_node?
@@ -34,12 +33,12 @@ class Node
       table = SymbolTable.new("Global")
       @children.each{|c| c.create_symbol_table(table)}
     elsif is_rule?("ProcedureDeclaration")
-      subtable = Table.new(@children[1].contents.value) #@children.select{|n| n.content.class == Token && n.content.value} #returns the value, which is the name
+      subtable = SymbolTable.new(@children[1].content.value) #@children.select{|n| n.content.class == Token && n.content.value} #returns the value, which is the name
       @children[3].create_symbol_table(subtable) #@c.select{FormalParamList}
       @children[6].create_symbol_table(subtable) #@c.select{Block}
       table.add_subtable(subtable)
     elsif is_rule?("FunctionDeclaration")
-      subtable = Table.new(@children[1].contents.value)
+      subtable = SymbolTable.new(@children[1].content.value)
       @children[3].create_symbol_table(subtable) #see above
       @children[8].create_symbol_table(subtable) #see above
       table.add_subtable(subtable)

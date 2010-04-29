@@ -80,8 +80,8 @@ class Parser
   def generate_3ac
     #TODO
   end
-  def emit_symbol_table; puts @symbol_table end
-  def emit_3ac; puts @three_addr_code end
+  def emit_symbol_table; puts "Symbol Table:\n#{@symbol_table}" end
+  def emit_3ac; puts "3AC:\n#{@three_addr_code}" end
   
   def post_actions?;    @options[:post_actions] end
   def parse_after_create?;    @options[:full]         end
