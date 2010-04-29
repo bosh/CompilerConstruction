@@ -111,45 +111,78 @@ class Node
       code += @children[0].create_three_addr_code
     elsif is_rule?("SimpleStatement")
       code += @children[0].create_three_addr_code unless @children.size == 0
-    elsif is_rule?("AssignmentStatement")
-      #
+    elsif is_rule?("AssignmentStatement") #needs work
+      @children.select{|c| c.is_rule?("Expression")}.each{|r| code += r.create_three_addr_code}
+      code << "_tempvar_ := above"
+      code << "work compselection in somehow"
+      code << "#{@children[0]} := _tempvar_"
     elsif is_rule?("ProcedureStatement")
       code += @children[2].create_three_addr_code
       code << "call #{@children[0].content.value}"
     elsif is_rule?("StructuredStatement")
       code += @children[0].create_three_addr_code
     elsif is_rule?("MatchedStatement")
-      #
+      #OHGOD
     elsif is_rule?("OpenStatement")
-      #
+      #OHGOD
     elsif is_rule?("Type")
-      #
+      #do nothing
     elsif is_rule?("Constant")
-      #
+      #usually do nothing, maybe save into a var
     elsif is_rule?("Expression")
-      #
+      code += @children[0].create_three_addr_code
+      if @children.size == 3
+        code << "_newtemp_ := _resultofabove_"
+        code += @children[2].create_three_addr_code
+        code << "_newtemp2_ := _resultofabove_"
+        code << "_passedintemp_ := _newtemp_ #{@children[1].children[0].content.value} _newtemp2_"
+      else
+        code << "_passedintemp_ := _resultofabove_"
+      end
     elsif is_rule?("RelationalOp")
-      #
+      #do nothing
     elsif is_rule?("SimpleExpression")
-      #
+      rep = 1
+      if @children[0].is_rule?("Sign")
+        code += @children[1].create_three_addr_code
+        code << "_fromprev_ #{@children[0].content.value} _fromprev_"
+        rep = 2
+      end
+      (rep..@children.size-2).each do |i| #May wish to make this run from the reverse backwards towards head
+        if rep == 1 && i%2 == 0; next end #TODO verify that 1 and 0 (even/odd) arent swapped 
+        if rep == 2 && i%2 == 1; next end
+        code += @children[i+1].create_three_addr_code
+        code += @children[i].create_three_addr_code
+        code << "_temp_:= running 'sum'"
+      end
     elsif is_rule?("AddOp")
-      #
+      #do nothing
     elsif is_rule?("Term")
-      #
+      #similar to SimpleExpr
     elsif is_rule?("MulOp")
-      #
+      #do nothing
     elsif is_rule?("Factor")
-      #
+      #usually do nothing
     elsif is_rule?("FunctionReference")
-      #
+      code += @children[2].create_three_addr_code
+      code << "call #{@children[0].content.value}"
     elsif is_rule?("ComponentSelection")
-      #
+      if !@children.size == 0
+        if @children[0].content.value == "." #its opt1
+          
+        else #its opt2
+          
+        end
+      end
     elsif is_rule?("ActualParameterList")
-      #
+      @children.select{|c| c.is_rule?("Expression")}.each do |r|
+        code += r.create_three_addr_code #pass in a new temp to save expr into
+        code << "param _thetempfromprevline_"
+      end
     elsif is_rule?("IdentifierList")
-      #
+      #dont do anything
     elsif is_rule?("Sign")
-      #
+      #dont do anything
     end
     code
   end
