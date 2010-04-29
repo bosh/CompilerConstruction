@@ -226,13 +226,17 @@ class Node
       if @children[0].is_rule?("FunctionReference")
         code += @children[0].create_three_addr_code
       elsif @children[1] && @children[1].is_rule?("ComponentSelection")
-        #resolve like componentselection first case
+        t = new_temp #This is also bad TODO
+        code += @children[1].create_three_addr_code(t)
+        code << "#{tempname}.#{t}"
       elsif @children[1] && @children[1].is_rule?("Factor")
         t = new_temp
         code += @children[1].create_three_addr_code(t)
         code << "#{tempname} := not #{t}"
       elsif @children[1] && @children[1].is_rule?("Expression")
         code += @children[1].create_three_addr_code(tempname)
+      else
+        code << "#{tempname} := #{@children[0].content.value}"
       end
     elsif is_rule?("FunctionReference")
       code += @children[2].create_three_addr_code
