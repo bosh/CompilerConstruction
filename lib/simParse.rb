@@ -13,7 +13,10 @@ if $0 == __FILE__
 \nOptions:
 \t[-s|-f]\t- Stdout OR fileout. File out will be _filename_parsed.txt
 \t-o\t- If mode -f, will overwrite any file with the same target name
-\t[-a|-n]\t- Full run OR no run. No run is default\n"
+\t[-a|-n]\t- Full run OR no run. No run is default
+\t[-p|-p1|-p2] - p = both:
+\t\tp1: print symbol table to command line
+\t\tp2: print three address code to command line\n"
   else
     opts = {}
     filename = ARGV.delete_at(0)

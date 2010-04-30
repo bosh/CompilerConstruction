@@ -25,3 +25,6 @@ simParse
     [-s|-f]	- Stdout OR fileout. File out will be _filename_parsed.txt
     -o		- If mode -f, will overwrite any file with the same target name
     [-a|-n]	- Full run OR no run. No run is default
+    [-p|-p1|-p2] - p = both:
+        p1: print symbol table to command line
+        p2: print three address code to command line
