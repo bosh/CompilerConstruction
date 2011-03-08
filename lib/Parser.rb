@@ -88,7 +88,7 @@ class Parser
   def file_output?;           @options[:file]                                   end
   def grammar_rules;          @grammar.grammar                                  end
   def cmd_line_output?;       @options[:stdout]                                 end
-  def overwrite_output?;      options[:overwrite]                               end
+  def overwrite_output?;     @options[:overwrite]                               end
   def premade_token_stream?;  @options[:from_tokens]                            end
   def post_action_one?;       @options[:post_action_one]                        end
   def post_action_two?;       @options[:post_action_two]                        end
