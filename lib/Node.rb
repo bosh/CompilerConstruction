@@ -1,11 +1,13 @@
 class Node
-  @@tempcount = 0
   attr_accessor :children, :parent, :content
-  def initialize(content, parent = nil, children = [])
-    @content = content
-    @parent = parent
+  @@tempcount = 0
+
+  def initialize( content, parent = nil, children = [] )
+    @parent   = parent
+    @content  = content
     @children = children
   end
+
   def tree_stringify(level = 0)
     str = ""
     level.times{str << "|\t"}
@@ -13,6 +15,7 @@ class Node
     @children.each{|c| str << "\n#{c.tree_stringify(level+1)}"}
     str
   end
+
   def clean!
     replacements = []
     @children.each do |c| #kills empties and anons/productions
@@ -59,10 +62,11 @@ class Node
       @children.each{|c| c.create_symbol_table(table)}
     end
     table
-  end  
+  end
+
   def type_analyze(typenode, table)
     first_child = typenode.children[0].content
-    if first_child.type == "ID"
+    if first_child.type     == "ID"
       first_child.value
     elsif first_child.value == "array"
       "array of #{type_analyze(typenode.children[7], table)}"
@@ -72,6 +76,7 @@ class Node
       puts "ERROR: Type detector borked"
     end
   end
+
   def create_three_addr_code(tempname = nil)
     code = []
     if is_rule?("Program")
@@ -131,45 +136,45 @@ class Node
     elsif is_rule?("MatchedStatement")
       if @children.size == 6 #if then else
         statement = new_temp
-        els = new_temp
+        els    = new_temp
         bottom = new_temp
-        t = new_temp
-        code += @children[1].create_three_addr_code(t) 
-        code << "if #{t} goto #{statement}" #true
-        code << "goto #{els}" #false
-        code << "#{statement}"
-        code += @children[3].create_three_addr_code
-        code << "goto #{bottom}"
-        code << "#{els}"
-        code += @children[5].create_three_addr_code
-        code << "#{bottom}"        
+        t      = new_temp
+        code   += @children[1].create_three_addr_code(t) 
+        code   << "if #{t} goto #{statement}" #true
+        code   << "goto #{els}" #false
+        code   << "#{statement}"
+        code   += @children[3].create_three_addr_code
+        code   << "goto #{bottom}"
+        code   << "#{els}"
+        code   += @children[5].create_three_addr_code
+        code   << "#{bottom}"        
       elsif @children.size == 1 #compound
-        code += @children[0].create_three_addr_code
+        code   += @children[0].create_three_addr_code
       elsif @children.size == 4 #while
-        top = new_temp
-        loop = new_temp
+        top    = new_temp
+        loop   = new_temp
         bottom = new_temp
-        code << "#{top}"
-        t = new_temp
-        code += @children[1].create_three_addr_code(t) 
-        code << "if #{t} goto #{loop}" #true
-        code << "goto #{bottom}" #false
-        code << "#{loop}"
-        code += @children[3].create_three_addr_code
-        code << "goto #{top}"
-        code << "#{bottom}"
+        code   << "#{top}"
+        t      = new_temp
+        code   += @children[1].create_three_addr_code(t) 
+        code   << "if #{t} goto #{loop}" #true
+        code   << "goto #{bottom}" #false
+        code   << "#{loop}"
+        code   += @children[3].create_three_addr_code
+        code   << "goto #{top}"
+        code   << "#{bottom}"
       else #if @children.size == 8
-        code << "TODO for loop"
+        code   << "TODO for loop"
       end
     elsif is_rule?("OpenStatement")
-      code << "TODOopens"
+      code     << "TODOopens"
     elsif is_rule?("Type")
       if @children.size == 1
-        code << "#{tempname} := #{@children[0].content.value}___"
+        code   << "#{tempname} := #{@children[0].content.value}___"
       elsif @children.size == 3
-        code << "record___"
+        code   << "record___"
       elsif @children.size > 3
-        code << "array___"
+        code   << "array___"
       end
     elsif is_rule?("Constant")
       if tempname
@@ -181,8 +186,8 @@ class Node
       end
     elsif is_rule?("Expression")
       if @children.size == 3
-        t = new_temp
-        t1 = new_temp
+        t    =  new_temp
+        t1   =  new_temp
         code += @children[2].create_three_addr_code(t)
         code += @children[0].create_three_addr_code(t1)
         code << "#{tempname} := #{t} #{@children[1].children[0].content.value} #{t1}"
@@ -280,14 +285,14 @@ class Node
     code
   end
 
-  def to_s;   "#{@content.to_s}"    end
-  def rule?;  @content =~ /\ARule:/      end
-  def is_rule?(name);  @content =~ /\ARule: (.*)/; rule? && $1.strip == name  end
-  def anonymous_rule?;  @content =~ /\ARule: anonymous\z/      end
-  def repeater_node?;  @content =~ /\ARepeater node\z/      end
-  def production?;  @content =~ /\AProduction\z/      end
-  def empty?; @content =~ /\AEmpty match/ end
-  def valid?; !(@content =~ /error/i)     end
-  def parse_error?; @content =~ /fatal/i  end
-  def new_temp; @@tempcount += 1; "t#{@@tempcount}" end
+  def to_s;             "#{@content.to_s}" end
+  def valid?;           !(@content  =~ /error/i)              end
+  def rule?;            @content    =~ /\ARule:/              end
+  def anonymous_rule?;  @content    =~ /\ARule: anonymous\z/  end
+  def repeater_node?;   @content    =~ /\ARepeater node\z/    end
+  def production?;      @content    =~ /\AProduction\z/       end
+  def empty?;           @content    =~ /\AEmpty match/        end
+  def parse_error?;     @content    =~ /fatal/i               end
+  def new_temp;         @@tempcount += 1; "t#{@@tempcount}"   end
+  def is_rule?(name);   @content    =~ /\ARule: (.*)/; rule? && $1.strip == name  end
 end

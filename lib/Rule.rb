@@ -1,50 +1,57 @@
 class Rule
   attr_accessor :name, :text, :productions, :type
-  def initialize(name, text)
-    @name = name.strip
-    @text = text.strip
-    @productions = []
+
+  def initialize( name, text )
+    @name         = name.strip
+    @text         = text.strip
+    @productions  = []
     @type = :basic #The only nonbasics are opt/repeating
     create_productions
   end
-  def to_s
-    "Rule: #{@name}, #{@type}, #{@productions.size} top level productions"
-  end
+
+  def to_s; "Rule: #{@name}, #{@type}, #{@productions.size} top level productions"  end
+  def create_productions; identify_productions.each{ |p| add_production(p) }        end
+  def add_production(text); @productions << Production.new(text) end
+  def combine_repeating(matches); Node.new("Repeater node", nil, matches) end
+  def empty_match; Node.new("Empty match") end
+  def rule_unsuccessful; Node.new("Error: Rule unsuccessful") end
+
   def to_extended
     str = to_s
     @productions.each{|p| str << "\n\t#{p.to_extended}"}
     str
   end
-  def create_productions; identify_productions.each{|p| add_production(p)} end
+
   def identify_productions
     prods = []
     if @text.wrapped?("(", ")") #Major limitation, there may not be different option sets in a rule at the same level/depth
       choice_productions.each{|p| prods << p}
     elsif @text.wrapped?("{", "}") #Major limitation again, no starting and ending with different option blocks
-      @type = :repeating
-      prods << @text[1...-1].strip
+      @type =   :repeating
+      prods <<  @text[1...-1].strip
     elsif @text.wrapped?("[", "]") #Major limitation again, no starting and ending with different option blocks
-      @type = :optional
-      prods << @text[1...-1].strip
+      @type =   :optional
+      prods <<  @text[1...-1].strip
     else
-      prods << @text
+      prods <<  @text
     end
     prods
   end
+
   def choice_productions
     subs = @text[1...-1].strip
     subs.gsub!("/", "//") #Major limitation, in that rules with /'s cannot have literal /'s
     subs.scan(/(\A|\/)(.*?)(\z|\/)/m).map{|i| i[1]}
   end
-  def add_production(text); @productions << Production.new(text) end
+
   def match?(tokenstream)
     $matchno += 1
     matchnum = $matchno
     puts "#{matchnum}  starting a match at #{$current_index} :: #{@type}" if debug?
     entry_position = $current_index
     match = nil
-    if @type == :basic
-      if @productions.size > 1 #it's a choice rule
+    if    @type == :basic
+      if  @productions.size > 1 #it's a choice rule
         @productions.each do |p|
           match = p.match?(tokenstream)
           if match.valid?
@@ -90,7 +97,4 @@ class Rule
     if match.content == "Production" : match.content = "Rule: #{@name}" end
     match #return
   end
-  def combine_repeating(matches); Node.new("Repeater node", nil, matches) end
-  def empty_match; Node.new("Empty match") end
-  def rule_unsuccessful; Node.new("Error: Rule unsuccessful") end
 end

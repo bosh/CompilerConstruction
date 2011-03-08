@@ -4,54 +4,71 @@ grammar Pseudocal
   rule Program
     "program" id ";" [TypeDefinitions] [VariableDeclarations] [SubprogramDeclarations] CompoundStatement "."
   endrule
+
   rule TypeDefinitions
     "type" TypeDefinition ";" {TypeDefinition ";"}
   endrule
+
   rule VariableDeclarations
     "var" VariableDeclaration ";" {VariableDeclaration ";"}
   endrule
+
   rule SubprogramDeclarations
     {(ProcedureDeclaration / FunctionDeclaration) ";"}
   endrule
+
   rule TypeDefinition
     id "=" Type
   endrule
+
   rule VariableDeclaration
     IdentifierList ":" Type
   endrule
+
   rule ProcedureDeclaration
     "procedure" id "(" FormalParameterList ")" ";" ( Block / "forward" )
   endrule
+
   rule FunctionDeclaration
     "function" id "(" FormalParameterList ")" ":" Type ";" ( Block / "forward" )
   endrule
+
   rule FormalParameterList
     [VariableDeclaration {";" VariableDeclaration}]
   endrule
+
   rule Block
     [VariableDeclarations] CompoundStatement
   endrule
+
   rule CompoundStatement
     "begin" StatementSequence "end"
   endrule
+
   rule StatementSequence
     Statement {";" Statement}
   endrule
+
   rule Statement
     (StructuredStatement / SimpleStatement)
   endrule
+
   rule SimpleStatement
     [(AssignmentStatement / ProcedureStatement)]
   endrule
+
   rule AssignmentStatement 
     id ComponentSelection ":=" Expression
   endrule
+
   rule ProcedureStatement
     id "(" ActualParameterList ")"
   endrule
+
   rule StructuredStatement
     (MatchedStatement / OpenStatement)
   endrule
+
   rule MatchedStatement
     ("if" Expression "then" Statement "else" Statement
     / CompoundStatement
@@ -59,6 +76,7 @@ grammar Pseudocal
     / "for" id ":=" Expression "to" Expression "do" Statement
     )
   endrule
+
   rule OpenStatement
     ("if" Expression "then" Statement
     / "if" Expression "then" MatchedStatement "else" OpenStatement
@@ -66,45 +84,59 @@ grammar Pseudocal
     / "for" id ":=" Expression "to" Expression "do" OpenStatement
     )
   endrule
+
   rule Type
     (id / "array" "[" Constant ".." Constant "]" "of" Type / "record" FormalParameterList "end")
   endrule
+
   rule Constant
     [Sign] int
   endrule
+
   rule Expression
     SimpleExpression [RelationalOp SimpleExpression]
   endrule
+
   rule RelationalOp
     ("<" / "<=" / ">" / ">=" / "<>" / "=")
   endrule
+
   rule SimpleExpression
     [Sign] Term {AddOp Term}
   endrule
+
   rule AddOp
     ("+" / "-" / "or")
   endrule
+
   rule Term
     Factor {MulOp Factor}
   endrule
+
   rule MulOp
     ("*" / "div" / "mod" / "and")
   endrule
+
   rule Factor
     (int / str / FunctionReference / id ComponentSelection / "not" Factor / "(" Expression ")" )
   endrule
+
   rule FunctionReference
     id "(" ActualParameterList ")"
   endrule
+
   rule ComponentSelection
     [("." id ComponentSelection / "[" Expression "]" ComponentSelection)]
   endrule
+
   rule ActualParameterList
     [Expression {"," Expression}]
   endrule
+
   rule IdentifierList
     id {"," id}
   endrule
+
   rule Sign
     ("+" / "-")
   endrule
